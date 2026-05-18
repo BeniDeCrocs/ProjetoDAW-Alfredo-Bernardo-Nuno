@@ -70,34 +70,6 @@
     color: black; /* Cor do texto "Utilizador" e "Password" */
 }
 
-/* A caixa invisível que segura o input e o olho */
-.password-container {
-    position: relative;
-    width: 100%;
-}
-
-/* Opcional: Dar um espaço na direita do input para o texto não ficar por baixo do olho */
-.password-container input {
-    padding-right: 40px !important; 
-}
-
-/* O estilo e posicionamento do Olho */
-.olho-icon {
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%); /* Centra o olho perfeitamente na vertical */
-    cursor: pointer; /* Fica com a mãozinha de clicar */
-    font-size: 18px;
-    user-select: none; /* Impede que o jogador selecione o emoji do olho sem querer */
-    opacity: 0.7; /* Fica um bocadinho sumido para não distrair */
-    transition: opacity 0.2s;
-}
-
-.olho-icon:hover {
-    opacity: 1; /* Fica totalmente visível quando passas o rato */
-}
-
 /* O treuque para o Checkbox e o Link ficarem opostos */
 .opcoes-checkbox-link {
     display: flex;
