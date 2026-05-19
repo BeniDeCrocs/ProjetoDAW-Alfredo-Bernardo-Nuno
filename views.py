@@ -3,6 +3,10 @@ from passlib.hash import pbkdf2_sha256 as hasher
 from flask_login import login_required, logout_user, login_user
 from user import get_user
 
+def home_page():
+    # Lógica que decide o que mostrar na página inicial
+    return render_template("home_page.html")
+
 def validate_register_form(form):
     form.data = {}
     form.errors = {}
@@ -73,12 +77,12 @@ def validate_login_form(form):
 # Rota para o Ecrã de Login
 def login_page():
     if request.method == "GET":
-        return render_template("login.html", form=None)
+        return render_template("index.html", form=None)
         
     valid = validate_login_form(request.form)
     
     if not valid:
-        return render_template("login.html", form=request.form)
+        return render_template("index.html", form=request.form)
         
     username = request.form.data["username"]
     user = get_user(username)
@@ -90,7 +94,7 @@ def login_page():
             # Redireciona para o dashboard após login de sucesso!
             return redirect(url_for("home_page")) 
             
-    return render_template("login.html", form=request.form)
+    return render_template("index.html", form=request.form)
 
 # Rota para o Logout
 def logout_page():

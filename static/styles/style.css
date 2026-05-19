@@ -1,5 +1,5 @@
 .login-container {
-    background-image: urlurl('static/images/pagina_login.jpg');
+    background-image: url('../images/pagina_login.jpg');
     background-size: cover;
     background-position: center;
     width: 100vw;
