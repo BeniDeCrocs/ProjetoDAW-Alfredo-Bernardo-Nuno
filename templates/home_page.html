@@ -1,0 +1,52 @@
+{% extends "layout.html" %}
+
+{% block title %}
+<h1 class="title">Dashboard</h1>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <h2>Bem-vindo, {{ current_user.username if current_user.is_authenticated else "Visitante" }}!</h2>
+    <p>Estás autenticado no sistema.</p>
+    
+    <div class="game-area">
+        <h3>O Teu Jogo</h3>
+        <p>Aqui vai o código do teu jogo...</p>
+    </div>
+    
+    <div class="logout-link">
+        <a href="{{ url_for('logout_page') }}" class="button is-danger">Logout</a>
+    </div>
+</div>
+
+<style>
+.dashboard-container {
+    max-width: 800px;
+    margin: 50px auto;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+.game-area {
+    margin: 30px 0;
+    padding: 20px;
+    background: #f5f5f5;
+    border-radius: 8px;
+}
+.logout-link {
+    text-align: center;
+    margin-top: 30px;
+}
+.button.is-danger {
+    background-color: #e74c3c;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+}
+.button.is-danger:hover {
+    background-color: #c0392b;
+}
+</style>
+{% endblock %}

@@ -24,6 +24,8 @@ def create_app():
     # Inicialização do gestor de autenticação na app (Lab 08)
     lm.init_app(app)
     lm.login_view = "login_page"  # Se alguém tentar entrar numa página protegida, é mandado para aqui
+
+    app.add_url_rule("/home", view_func=views.home_page)
     
     # ==========================================
     # 3. DEFINIÇÃO DAS ROTAS (ROUTES)
@@ -34,6 +36,7 @@ def create_app():
     # Rotas obrigatórias para o Login e Logout (Lab 08)
     app.add_url_rule("/registar", view_func=views.register_page, methods=["GET", "POST"])
     app.add_url_rule("/login", view_func=views.login_page, methods=["GET", "POST"])
+    app.add_url_rule("/recuperar", view_func=views.recover_page, methods=["GET", "POST"])
     app.add_url_rule("/logout", view_func=views.logout_page)
     app.add_url_rule("/", view_func=views.home_page)
     
@@ -46,6 +49,7 @@ def create_app():
     # Descobre o caminho para a vossa pasta 'models' e liga ao ficheiro SQLite
     models_dir = os.path.dirname(os.path.abspath(__file__)) + "/models"
     db = Database(os.path.join(models_dir, "movies.sqlite"))
+    db.create_user_table()
     app.config["db"] = db
     
     return app

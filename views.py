@@ -90,7 +90,8 @@ def login_page():
     if user is not None:
         password = request.form.data["password"]
         if hasher.verify(password, user.password):
-            login_user(user)
+            remember = request.form.get("remember") == "yes"
+            login_user(user, remember=remember)
             # Redireciona para o dashboard após login de sucesso!
             return redirect(url_for("home_page")) 
             
@@ -101,7 +102,62 @@ def logout_page():
     logout_user()
     return redirect(url_for("home_page"))
 
-# Rota temporária para o vosso dashboard (Página principal do jogo)
-def home_page():
-    return "<h1>Bem-vindo ao Dashboard Cyber-Syndicate!</h1>"
+
+def validate_recover_form(form):
+    """Valida o formulário de recuperação de password"""
+    form.data = {}
+    form.errors = {}
+    
+    form_username = form.get("username", "").strip()
+    if len(form_username) == 0:
+        form.errors["username"] = "Username não pode ser vazio."
+    else:
+        form.data["username"] = form_username
+        
+    form_password = form.get("new_password", "")
+    if len(form_password) < 4:
+        form.errors["new_password"] = "A password deve ter pelo menos 4 caracteres."
+    else:
+        form.data["new_password"] = form_password
+        
+    form_confirm = form.get("confirm_password", "")
+    if form_password != form_confirm:
+        form.errors["confirm_password"] = "As palavras-passe não coincidem."
+    
+    return len(form.errors) == 0
+
+
+def recover_page():
+    """Página de recuperação de palavra-passe"""
+    if request.method == "GET":
+        return render_template("recover.html", error=None)
+    
+    # Validar formulário
+    valid = validate_recover_form(request.form)
+    
+    if not valid:
+        return render_template("recover.html", form=request.form, error=None)
+    
+    username = request.form.data["username"]
+    new_password = request.form.data["new_password"]
+    
+    # 1. Verificar se o utilizador existe
+    user = get_user(username)
+    
+    if not user:
+        # Utilizador não encontrado
+        return render_template("recover.html", error="Utilizador não encontrado.", form=request.form)
+    
+    # 2. Gerar novo hash para a nova password
+    new_hashed_pw = hasher.hash(new_password)
+    
+    # 3. Atualizar na base de dados
+    db = current_app.config["db"]
+    sucesso = db.update_password(username, new_hashed_pw)
+    
+    if sucesso:
+        # Password atualizada com sucesso - redirecionar para login
+        return redirect(url_for("login_page"))
+    else:
+        return render_template("recover.html", error="Erro ao atualizar password. Tenta novamente.", form=request.form)
 

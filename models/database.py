@@ -40,3 +40,16 @@ class Database:
             except dbapi2.IntegrityError:
                 # Como o USERNAME é UNIQUE na vossa BD, se falhar é porque já existe
                 return False
+            
+    def update_password(self, username, new_hashed_password):
+        """Atualiza a password de um utilizador na base de dados"""
+        try:
+            with dbapi2.connect(self.dbfile) as connection:
+                cursor = connection.cursor()
+                query = "UPDATE USER SET PASSWORD = ? WHERE USERNAME = ?"
+                cursor.execute(query, (new_hashed_password, username))
+                connection.commit()
+                return cursor.rowcount > 0  # True se atualizou algum registo
+        except Exception as e:
+            print(f"Erro ao atualizar password: {e}")
+            return False
