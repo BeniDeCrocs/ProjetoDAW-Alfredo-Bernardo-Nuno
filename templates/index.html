@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PÁGINA LOGIN - Cyber Syndicate</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
+</head>
+<body>
+    <div class="login-container">
+        <div class="efeito-luz-pisca"></div>
+        
+        <form method="post" action="{{ url_for('login_page') }}" class="login-box">
+            
+            <input type="text" name="username" placeholder="Utilizador" required>
+            
+            <div style="position: relative; width: 100%;">
+                <input type="password" name="password" id="password-input" placeholder="Password" required>
+                <span id="toggle-password" style="position: absolute; right: 10px; top: 12px; cursor: pointer;">👁️</span>
+            </div>
+            
+            <div class="opcoes-checkbox-link">
+                <label>
+                    <input type="checkbox" name="remember"> Relembrar
+                </label>
+                <a href="#">Recuperar palavra-passe</a>
+            </div>
+
+            <button type="submit" class="btn-login">Entrar</button>
+            
+            <hr class="linha-divisoria">
+            
+            <a href="{{ url_for('register_page') }}" class="btn-registar" style="display: block; text-align: center; text-decoration: none; box-sizing: border-box;">Registar</a>
+            
+            {% if form and form.errors %}
+                <p style="color: #ff4444; font-size: 12px; text-align: center;">Erro: Credenciais inválidas!</p>
+            {% endif %}
+            
+        </form>
+    </div>
+
+    <script src="{{ url_for('static', filename='scripts/code.js') }}" defer></script>
+</body>
+</html>

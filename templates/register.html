@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REGISTO - Cyber Syndicate</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
+</head>
+<body>
+    <div class="login-container">
+        <div class="efeito-luz-pisca"></div>
+        
+        <form method="post" action="{{ url_for('register_page') }}" class="login-box">
+            <h2 style="text-align: center; margin-top: 0;">Novo Hacker</h2>
+            
+            <input type="text" name="username" placeholder="Novo Utilizador" required>
+            
+            <div style="position: relative; width: 100%;">
+                <input type="password" name="password" id="password-input" placeholder="Nova Password" required>
+                <span id="toggle-password" style="position: absolute; right: 10px; top: 12px; cursor: pointer;">👁️</span>
+            </div>
+
+            {% if form and form.errors %}
+                <div style="color: #ff4444; font-size: 13px; text-align: center; margin-top: 5px;">
+                    {% if form.errors.username %}<p>{{ form.errors.username }}</p>{% endif %}
+                    {% if form.errors.password %}<p>{{ form.errors.password }}</p>{% endif %}
+                </div>
+            {% endif %}
+
+            <button type="submit" class="btn-registar" style="margin-top: 15px;">Criar Conta</button>
+            
+            <hr class="linha-divisoria">
+            
+            <button type="button" class="btn-login" onclick="window.location.href='/login'">Voltar ao Login</button>
+        </form>
+    </div>
+
+    <script src="{{ url_for('static', filename='scripts/main.js') }}" defer></script>
+</body>
+</html>
