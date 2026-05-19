@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Syndicate - Jogo</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
+    <script src="{{ url_for('static', filename='scripts/main.js') }}" defer></script>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <ul>
+                <li><a class="botao" href="{{ url_for('home_page') }}">Home</a></li>
+                {% if current_user.is_authenticated %}
+                    <li><a class="botao" href="{{ url_for('logout_page') }}">Logout ({{ current_user.username }})</a></li>
+                {% else %}
+                    <li><a class="botao" href="{{ url_for('login_page') }}">Login</a></li>
+                    <li><a class="botao" href="{{ url_for('register_page') }}">Registar</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        <div class="header-title">
+            {% block title %}{% endblock %}
+        </div>
+    </header>
+
+    <main class="content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2026 Cyber Syndicate. Todos os direitos reservados.</p>
+    </footer>
+</body>
+</html>

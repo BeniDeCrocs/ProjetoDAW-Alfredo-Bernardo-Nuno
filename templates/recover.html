@@ -1,0 +1,78 @@
+{% extends "layout.html" %}
+
+{% block title %}
+<h1 class="title">Recuperar Palavra-passe</h1>
+{% endblock %}
+
+{% block content %}
+<div class="recover-container">
+    <p class="subtitle">Insere o teu username e uma nova palavra-passe.</p>
+    
+    <form method="post" action="{{ url_for('recover_page') }}">
+        <div class="field">
+            <label class="label">Username</label>
+            <div class="control">
+                <input class="input" type="text" name="username" 
+                       placeholder="O teu username" 
+                       value="{{ form.username if form else '' }}" required>
+            </div>
+        </div>
+
+        <div class="field">
+            <label class="label">Nova Palavra-passe</label>
+            <div class="control">
+                <input class="input" type="password" name="new_password" 
+                       placeholder="Nova palavra-passe" required>
+            </div>
+        </div>
+
+        <div class="field">
+            <label class="label">Confirmar Nova Palavra-passe</label>
+            <div class="control">
+                <input class="input" type="password" name="confirm_password" 
+                       placeholder="Confirmar nova palavra-passe" required>
+            </div>
+        </div>
+
+        {% if error %}
+        <div class="notification is-danger">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <div class="field is-grouped">
+            <div class="control">
+                <button class="button is-primary" type="submit">Recuperar</button>
+            </div>
+            <div class="control">
+                <a class="button is-light" href="{{ url_for('login_page') }}">
+                    Voltar ao Login
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+.recover-container {
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+.subtitle {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #555;
+}
+.notification.is-danger {
+    background-color: #e74c3c;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+}
+</style>
+{% endblock %}
