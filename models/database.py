@@ -15,8 +15,8 @@ class Database:
                 ID INTEGER PRIMARY KEY AUTOINCREMENT,
                 USERNAME TEXT UNIQUE NOT NULL,
                 PASSWORD TEXT NOT NULL,
-                CRYPTO INTEGER DEFAULT 100, 
-                DADOS INTEGER DEFAULT 50
+                CRYPTO INTEGER DEFAULT 200, 
+                DADOS INTEGER DEFAULT 200
             )
             """)
             connection.commit()
