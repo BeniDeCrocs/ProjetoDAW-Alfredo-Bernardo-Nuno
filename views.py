@@ -53,13 +53,13 @@ def validate_register_form(form):
 def register_page():
     # Se for GET, mostra o formulário vazio
     if request.method == "GET":
-        return render_template("register.html", form=None)
+        return render_template("registar.html", form=None)
     
     # Se for POST, processa os dados
     valid = validate_register_form(request.form)
     
     if not valid:
-        return render_template("register.html", form=request.form)
+        return render_template("registar.html", form=request.form)
         
     username = request.form.data["username"]
     password = request.form.data["password"]
@@ -77,7 +77,7 @@ def register_page():
     else:
         # Se o utilizador já existir na BD
         request.form.errors["username"] = "Este utilizador já existe no Cyber Breach!"
-        return render_template("register.html", form=request.form)
+        return render_template("registar.html", form=request.form)
 
 # Validação do formulário (Lab 08)
 def validate_login_form(form):
@@ -152,13 +152,13 @@ def validate_recover_form(form):
 def recover_page():
     """Página de recuperação de palavra-passe"""
     if request.method == "GET":
-        return render_template("recover.html", error=None)
+        return render_template("recuperar.html", error=None)
     
     # Validar formulário
     valid = validate_recover_form(request.form)
     
     if not valid:
-        return render_template("recover.html", form=request.form, error=None)
+        return render_template("recuperar.html", form=request.form, error=None)
     
     username = request.form.data["username"]
     new_password = request.form.data["new_password"]
@@ -168,7 +168,7 @@ def recover_page():
     
     if not user:
         # Utilizador não encontrado
-        return render_template("recover.html", error="Utilizador não encontrado.", form=request.form)
+        return render_template("recuperar.html", error="Utilizador não encontrado.", form=request.form)
     
     # 2. Gerar novo hash para a nova password
     new_hashed_pw = hasher.hash(new_password)
@@ -181,4 +181,4 @@ def recover_page():
         # Password atualizada com sucesso - redirecionar para login
         return redirect(url_for("login_page"))
     else:
-        return render_template("recover.html", error="Erro ao atualizar password. Tenta novamente.", form=request.form)
+        return render_template("recuperar.html", error="Erro ao atualizar password. Tenta novamente.", form=request.form)
