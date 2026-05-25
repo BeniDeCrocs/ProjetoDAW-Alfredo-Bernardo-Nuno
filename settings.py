@@ -5,7 +5,7 @@ DEBUG = True
 PORT = 8080
 
 # Chave usada para proteger as sessões da aplicação
-SECRET_KEY = "cyber_syndicate_secret"
+SECRET_KEY = "cyber_breach_secret"
 
 # Palavra-passe do admin com HASH (Nunca em texto simples!)
 ADMIN_PASSWORD = '$pbkdf2-sha256$29000$LeU857z33jtHaI0R4rx3rg$wGUVZMcQpkEyFVhOAhxqIpNeYML3K2pWXojmGqDwweg'
