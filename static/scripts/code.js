@@ -13,11 +13,12 @@ document.addEventListener('DOMContentLoaded', function () {
             if (passwordInput.type === 'password') {
                 // Se estiver, muda para texto normal e muda o ícone
                 passwordInput.type = 'text';
-                togglePassword.textContent = '🙈'; 
+                togglePassword.innerHTML = '<img src="/static/images/password_escondida.png" alt="Esconder Password" width="24">'; 
+
             } else {
                 // Se não, volta a esconder em forma de password e repõe o olho normal
                 passwordInput.type = 'password';
-                togglePassword.textContent = '👁️'; 
+                togglePassword.innerHTML = '<img src="/static/images/hacker_password.png" alt="Mostrar Password" width="24">';                
             }
         });
     }
