@@ -2,4 +2,10 @@
 .venv/
 __pycache__/
 *.pyc
+<<<<<<< HEAD
 cyberbreach.sqlite
+=======
+movies.sqlite
+static/images/
+*.sqlite
+>>>>>>> 9279591f1357dd6763518e370f4322f7163d2513
