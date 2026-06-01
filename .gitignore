@@ -4,3 +4,4 @@ __pycache__/
 *.pyc
 movies.sqlite
 static/images/
+*.sqlite
