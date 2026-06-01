@@ -3,6 +3,19 @@ html, body {
     padding: 0;
 }
 
+.header-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    padding: 20px;
+}
+
+.header-logo {
+    width: 60px;
+    height: auto;
+}
+
 .login-container {
     background-image: url('../images/pagina_login.jpg');
     background-size: cover;
