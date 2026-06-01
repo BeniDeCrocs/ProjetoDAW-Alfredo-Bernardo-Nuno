@@ -1,11 +1,36 @@
 from flask import render_template, request, redirect, url_for, current_app
 from passlib.hash import pbkdf2_sha256 as hasher
-from flask_login import login_required, logout_user, login_user
+from flask_login import login_required, logout_user, login_user, current_user # <-- Adicionado current_user aqui
 from user import get_user
 
 def home_page():
-    # Lógica que decide o que mostrar na página inicial
-    return render_template("home_page.html")
+    # 1. Se o utilizador NÃO estiver logado (visitante), envia slots vazios 
+    # para não dar erro no HTML, mas o HTML vai mostrar o ecrã de Acesso Restrito.
+    if not current_user.is_authenticated:
+        return render_template("index.html", slots=None)
+
+    # 2. Vamos buscar os servidores que este Hacker já tem na BD
+    db = current_app.config["db"]
+    servidores_bd = db.get_user_servers(current_user.username)
+
+    # 3. Criamos a "grelha" base com 3 Slots (todos Livres inicialmente)
+    slots = {
+        1: {"status": "Livre", "tipo": None},
+        2: {"status": "Livre", "tipo": None},
+        3: {"status": "Livre", "tipo": None}
+    }
+
+    # 4. Verificamos a BD. Se ele já tiver construído algo no Slot 1, atualizamos a grelha.
+    for s in servidores_bd:
+        slot_id = s["slot_id"]
+        if slot_id in slots:
+            slots[slot_id] = {
+                "status": "Ocupado",
+                "tipo": s["tipo"]
+            }
+
+    # 5. Enviamos os slots configurados para o HTML os desenhar!
+    return render_template("index.html", slots=slots)
 
 def validate_register_form(form):
     form.data = {}
@@ -26,20 +51,20 @@ def validate_register_form(form):
     return len(form.errors) == 0
 
 def register_page():
-    # Se for GET, mostra o formulário vazio [cite: 3563]
+    # Se for GET, mostra o formulário vazio
     if request.method == "GET":
-        return render_template("register.html", form=None)
+        return render_template("registar.html", form=None)
     
-    # Se for POST, processa os dados [cite: 3564]
+    # Se for POST, processa os dados
     valid = validate_register_form(request.form)
     
     if not valid:
-        return render_template("register.html", form=request.form)
+        return render_template("registar.html", form=request.form)
         
     username = request.form.data["username"]
     password = request.form.data["password"]
     
-    # IMPORTANTE: Aplicar hashing antes de guardar! [cite: 3565]
+    # IMPORTANTE: Aplicar hashing antes de guardar!
     hashed_pw = hasher.hash(password)
     
     # Chamar a BD para gravar 
@@ -51,9 +76,8 @@ def register_page():
         return redirect(url_for("login_page"))
     else:
         # Se o utilizador já existir na BD
-        request.form.errors["username"] = "Este utilizador já existe no Syndicate!"
-        return render_template("register.html", form=request.form)
-
+        request.form.errors["username"] = "Este utilizador já existe no Cyber Breach!"
+        return render_template("registar.html", form=request.form)
 
 # Validação do formulário (Lab 08)
 def validate_login_form(form):
@@ -77,12 +101,12 @@ def validate_login_form(form):
 # Rota para o Ecrã de Login
 def login_page():
     if request.method == "GET":
-        return render_template("index.html", form=None)
+        return render_template("login.html", form=None)
         
     valid = validate_login_form(request.form)
     
     if not valid:
-        return render_template("index.html", form=request.form)
+        return render_template("login.html", form=request.form)
         
     username = request.form.data["username"]
     user = get_user(username)
@@ -93,15 +117,14 @@ def login_page():
             remember = request.form.get("remember") == "yes"
             login_user(user, remember=remember)
             # Redireciona para o dashboard após login de sucesso!
-            return redirect(url_for("home_page")) 
+            return redirect(url_for("home_page"))
             
-    return render_template("index.html", form=request.form)
+    return render_template("login.html", form=request.form)
 
 # Rota para o Logout
 def logout_page():
     logout_user()
     return redirect(url_for("home_page"))
-
 
 def validate_recover_form(form):
     """Valida o formulário de recuperação de password"""
@@ -126,17 +149,16 @@ def validate_recover_form(form):
     
     return len(form.errors) == 0
 
-
 def recover_page():
     """Página de recuperação de palavra-passe"""
     if request.method == "GET":
-        return render_template("recover.html", error=None)
+        return render_template("recuperar.html", error=None)
     
     # Validar formulário
     valid = validate_recover_form(request.form)
     
     if not valid:
-        return render_template("recover.html", form=request.form, error=None)
+        return render_template("recuperar.html", form=request.form, error=None)
     
     username = request.form.data["username"]
     new_password = request.form.data["new_password"]
@@ -146,7 +168,7 @@ def recover_page():
     
     if not user:
         # Utilizador não encontrado
-        return render_template("recover.html", error="Utilizador não encontrado.", form=request.form)
+        return render_template("recuperar.html", error="Utilizador não encontrado.", form=request.form)
     
     # 2. Gerar novo hash para a nova password
     new_hashed_pw = hasher.hash(new_password)
@@ -159,5 +181,4 @@ def recover_page():
         # Password atualizada com sucesso - redirecionar para login
         return redirect(url_for("login_page"))
     else:
-        return render_template("recover.html", error="Erro ao atualizar password. Tenta novamente.", form=request.form)
-
+        return render_template("recuperar.html", error="Erro ao atualizar password. Tenta novamente.", form=request.form)

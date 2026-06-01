@@ -48,7 +48,7 @@ def create_app():
     # ==========================================
     # Descobre o caminho para a vossa pasta 'models' e liga ao ficheiro SQLite
     models_dir = os.path.dirname(os.path.abspath(__file__)) + "/models"
-    db = Database(os.path.join(models_dir, "movies.sqlite"))
+    db = Database(os.path.join(models_dir, "cyberbreach.sqlite"))
     db.create_user_table()
     app.config["db"] = db
     

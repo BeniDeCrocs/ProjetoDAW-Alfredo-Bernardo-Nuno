@@ -5,15 +5,18 @@ class Database:
     def __init__(self, dbfile):
         self.dbfile = dbfile # Guarda o nome do ficheiro da BD
         self.create_user_table() # Chama o método para criar a tabela se não existir
-        
+        self.create_server_table()
     def create_user_table(self):
         with dbapi2.connect(self.dbfile) as connection:
             cursor = connection.cursor()
+            # Adicionámos as colunas CRYPTO e DADOS com valores por defeito
             cursor.execute("""
             CREATE TABLE IF NOT EXISTS USER (
                 ID INTEGER PRIMARY KEY AUTOINCREMENT,
                 USERNAME TEXT UNIQUE NOT NULL,
-                PASSWORD TEXT NOT NULL
+                PASSWORD TEXT NOT NULL,
+                CRYPTO INTEGER DEFAULT 200, 
+                DADOS INTEGER DEFAULT 200
             )
             """)
             connection.commit()
@@ -21,11 +24,18 @@ class Database:
     def get_user(self, username):
         with dbapi2.connect(self.dbfile) as connection:
             cursor = connection.cursor()
-            query = "SELECT USERNAME, PASSWORD FROM USER WHERE USERNAME = ?"
+            # Agora pedimos também o CRYPTO e os DADOS à base de dados
+            query = "SELECT USERNAME, PASSWORD, CRYPTO, DADOS FROM USER WHERE USERNAME = ?"
             cursor.execute(query, (username,))
             row = cursor.fetchone()
             if row:
-                return {"username": row[0], "password": row[1]}
+                # Devolvemos um dicionário com toda a informação do Hacker
+                return {
+                    "username": row[0], 
+                    "password": row[1],
+                    "crypto": row[2],
+                    "dados": row[3]
+                }
             return None
         
     def add_user(self, username, hashed_password):
@@ -53,3 +63,30 @@ class Database:
         except Exception as e:
             print(f"Erro ao atualizar password: {e}")
             return False
+        
+    def create_server_table(self):
+        with dbapi2.connect(self.dbfile) as connection:
+            cursor = connection.cursor()
+            # Cria a tabela de servidores associada aos utilizadores
+            cursor.execute("""
+            CREATE TABLE IF NOT EXISTS SERVIDORES (
+                ID INTEGER PRIMARY KEY AUTOINCREMENT,
+                USERNAME TEXT NOT NULL,
+                SLOT_ID INTEGER NOT NULL,
+                TIPO_SERVIDOR TEXT NOT NULL,
+                STATUS TEXT DEFAULT 'Parado',
+                FIM_TAREFA TIMESTAMP,
+                FOREIGN KEY(USERNAME) REFERENCES USER(USERNAME)
+            )
+            """)
+            connection.commit()
+            
+    # Função para ir buscar os servidores de um Hacker específico
+    def get_user_servers(self, username):
+        with dbapi2.connect(self.dbfile) as connection:
+            cursor = connection.cursor()
+            query = "SELECT SLOT_ID, TIPO_SERVIDOR, STATUS, FIM_TAREFA FROM SERVIDORES WHERE USERNAME = ?"
+            cursor.execute(query, (username,))
+            # Devolve uma lista de dicionários para ser fácil de usar no HTML
+            return [{"slot_id": row[0], "tipo": row[1], "status": row[2], "fim_tarefa": row[3]} for row in cursor.fetchall()]
+        
