@@ -37,12 +37,17 @@ def create_app():
     app.add_url_rule("/logout", view_func=views.logout_page)
     # Rota da Ponte Fantasma
     app.add_url_rule("/salvar-progresso", view_func=views.salvar_progresso, methods=["POST"])
+    app.add_url_rule("/construir", view_func=views.construir, methods=["POST"])
+    app.add_url_rule("/iniciar-tarefa", view_func=views.iniciar_tarefa, methods=["POST"])
+    app.add_url_rule("/receber-recompensa", view_func=views.receber_recompensa, methods=["POST"])
+    app.add_url_rule("/comprar-estrutura", view_func=views.comprar_estrutura, methods=["POST"])
 
     # INICIALIZAÇÃO DA BASE DE DADOS
 
     models_dir = os.path.dirname(os.path.abspath(__file__)) + "/models"
     db = Database(os.path.join(models_dir, "cyberbreach.sqlite"))
     db.create_user_table()
+    db.create_server_table()
     app.config["db"] = db
     
     return app

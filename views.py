@@ -2,35 +2,83 @@ from flask import render_template, request, redirect, url_for, current_app, json
 from passlib.hash import pbkdf2_sha256 as hasher
 from flask_login import login_required, logout_user, login_user, current_user 
 from user import get_user
+import time
 
-def home_page():
-    # 1. Se o utilizador NÃO estiver logado (visitante), envia slots vazios 
-    # para não dar erro no HTML, mas o HTML vai mostrar o ecrã de Acesso Restrito.
-    if not current_user.is_authenticated:
-        return render_template("index.html", slots=None)
-
-    # 2. Vamos buscar os servidores que este Hacker já tem na BD
-    db = current_app.config["db"]
-    servidores_bd = db.get_user_servers(current_user.username)
-
-    # 3. Criamos a "grelha" base com 3 Slots (todos Livres inicialmente)
-    slots = {
-        1: {"status": "Livre", "tipo": None},
-        2: {"status": "Livre", "tipo": None},
-        3: {"status": "Livre", "tipo": None}
+# Configuração de Equilíbrio das Construções (Tempos em segundos)
+CONFIG_SOFTWARE = {
+    "Trojan": {
+        "custo_dados": 50, "custo_crypto": 0,
+        "geracao_dados": 1, "geracao_crypto": 0 # +1 Dado por segundo
+    },
+    "Servidor": {
+        "custo_dados": 150, "custo_crypto": 50,
+        "geracao_dados": 5, "geracao_crypto": 1 # +5 Dados e +1 Cripto por segundo
+    },
+    "Fórum da Dark Web": {
+        "custo_dados": 500, "custo_crypto": 200,
+        "geracao_dados": 20, "geracao_crypto": 5 # +20 Dados e +5 Cripto por segundo
     }
+}
 
-    # 4. Verificamos a BD. Se ele já tiver construído algo no Slot 1, atualizamos a grelha.
-    for s in servidores_bd:
-        slot_id = s["slot_id"]
-        if slot_id in slots:
-            slots[slot_id] = {
-                "status": "Ocupado",
-                "tipo": s["tipo"]
-            }
-
-    # 5. Enviamos os slots configurados para o HTML os desenhar!
-    return render_template("index.html", slots=slots)
+@login_required
+def home_page():
+    db = current_app.config["db"]
+    import sqlite3 as dbapi2
+    
+    # Mapeamento fixo: cada slot tem um software específico
+    mapeamento_software_por_slot = {
+        1: "Trojan",
+        2: "Servidor",
+        3: "Fórum da Dark Web"
+    }
+    
+    # Configuração dos slots (estado inicial)
+    slots = {
+        1: {"slot_id": 1, "tipo": "Slot Vazio", "status": "Livre", "producao_d": 0, "producao_c": 0, "fim_tarefa": 0},
+        2: {"slot_id": 2, "tipo": "Slot Vazio", "status": "Livre", "producao_d": 0, "producao_c": 0, "fim_tarefa": 0},
+        3: {"slot_id": 3, "tipo": "Slot Vazio", "status": "Livre", "producao_d": 0, "producao_c": 0, "fim_tarefa": 0}
+    }
+    
+    total_geracao_dados = 1
+    total_geracao_crypto = 0
+    
+    try:
+        with dbapi2.connect(db.dbfile) as connection:
+            connection.row_factory = dbapi2.Row
+            cursor = connection.cursor()
+            
+            # Buscar servidores do utilizador
+            cursor.execute("SELECT SLOT_ID, TIPO_SERVIDOR, STATUS, FIM_TAREFA FROM SERVIDORES WHERE USERNAME = ?", (current_user.username,))
+            servidores_bd = cursor.fetchall()
+            
+            for s in servidores_bd:
+                slot_id = s["SLOT_ID"]
+                tipo_software = s["TIPO_SERVIDOR"]
+                status = s["STATUS"]
+                fim_tarefa = s["FIM_TAREFA"] or 0
+                
+                if slot_id in slots:
+                    config = CONFIG_SOFTWARE.get(tipo_software, {})
+                    slots[slot_id] = {
+                        "slot_id": slot_id,
+                        "tipo": tipo_software,  # Nome do software (Trojan, Servidor, etc.)
+                        "status": status,
+                        "fim_tarefa": fim_tarefa,
+                        "producao_d": config.get("geracao_dados", 0),
+                        "producao_c": config.get("geracao_crypto", 0)
+                    }
+                    total_geracao_dados += config.get("geracao_dados", 0)
+                    total_geracao_crypto += config.get("geracao_crypto", 0)
+                    
+    except Exception as e:
+        print(f"Erro ao carregar slots: {e}")
+    
+    return render_template(
+        "index.html", 
+        slots=slots,
+        total_fps_dados=total_geracao_dados,
+        total_fps_crypto=total_geracao_crypto
+    )
 
 def validate_register_form(form):
     form.data = {}
@@ -187,3 +235,175 @@ def salvar_progresso():
         return jsonify({"status": "sucesso"})
     else:
         return jsonify({"status": "erro"}), 500
+    
+@login_required
+def construir():
+    dados_json = request.get_json() or {}
+    slot_id = int(dados_json.get("slot_id", 0))
+    tipo = dados_json.get("tipo")
+
+    if tipo not in CONFIG_SOFTWARE:
+        return jsonify({"status": "erro", "mensagem": "Estrutura inválida"}), 400
+
+    config = CONFIG_SOFTWARE[tipo]
+    db = current_app.config["db"]
+    user_data = db.get_user(current_user.username)
+
+    # Validar recursos no Servidor (Segurança obrigatória do guião!)
+    if user_data["dados"] < config["custo_dados"] or user_data["crypto"] < config["custo_crypto"]:
+        return jsonify({"status": "erro", "mensagem": "Recursos insuficientes!"}), 400
+
+    # Deduzir custos e atualizar utilizador
+    novos_dados = user_data["dados"] - config["custo_dados"]
+    novo_crypto = user_data["crypto"] - config["custo_crypto"]
+    db.update_user_resources(current_user.username, novo_crypto, novos_dados)
+
+    # Calcular quando termina a construção
+    fim_construcao = int(time.time()) + config["tempo_construcao"]
+    db.insert_server(current_user.username, slot_id, tipo, "A construir", fim_construcao)
+
+    return jsonify({
+        "status": "sucesso",
+        "dados": novos_dados,
+        "crypto": novo_crypto,
+        "fim_tarefa": fim_construcao
+    })
+
+@login_required
+def iniciar_tarefa():
+    dados_json = request.get_json() or {}
+    slot_id = int(dados_json.get("slot_id", 0))
+
+    db = current_app.config["db"]
+    servidores = db.get_user_servers(current_user.username)
+    servidor = next((s for s in servidores if s["slot_id"] == slot_id), None)
+
+    if not servidor or servidor["status"] != "Parado":
+        return jsonify({"status": "erro", "mensagem": "Servidor não está pronto"}), 400
+
+    config = CONFIG_SOFTWARE[servidor["tipo"]]
+    fim_tarefa = int(time.time()) + config["tempo_tarefa"]
+    
+    db.update_server_status(current_user.username, slot_id, "Em Tarefa", fim_tarefa)
+    return jsonify({"status": "sucesso", "fim_tarefa": fim_tarefa})
+
+@login_required
+def receber_recompensa():
+    dados_recebidos = request.get_json() or {}
+    slot_id = int(dados_recebidos.get("slot_id", 0))
+    
+    db = current_app.config["db"]
+    import sqlite3 as dbapi2
+    
+    agora = int(time.time())
+    
+    try:
+        with dbapi2.connect(db.dbfile) as connection:
+            connection.row_factory = dbapi2.Row  # Permite aceder aos campos por nome
+            cursor = connection.cursor()
+            cursor.execute(
+                "SELECT TIPO_SERVIDOR, STATUS, FIM_TAREFA FROM SERVIDORES WHERE USERNAME = ? AND SLOT_ID = ?", 
+                (current_user.username, slot_id)
+            )
+            row = cursor.fetchone()
+            
+            if not row:
+                return jsonify({"status": "erro", "mensagem": "Nenhuma estrutura ativa neste slot."}), 400
+                
+            tipo_software = row["TIPO_SERVIDOR"]
+            status = row["STATUS"]
+            fim_tarefa = int(row["FIM_TAREFA"]) if row["FIM_TAREFA"] else 0
+            
+            # Ajuste de segurança caso o nome venha ligeiramente diferente do dicionário
+            if tipo_software == "Fórum Dark Web" and "Fórum da Dark Web" in CONFIG_SOFTWARE:
+                tipo_software = "Fórum da Dark Web"
+
+            # Validar se o tipo de software existe na configuração
+            if tipo_software not in CONFIG_SOFTWARE:
+                return jsonify({"status": "erro", "mensagem": f"Software '{tipo_software}' inválido."}), 400
+                
+            config = CONFIG_SOFTWARE[tipo_software]
+            
+            # Proteção contra cheats de tempo
+            if status == "EmConstrucao" and agora < fim_tarefa:
+                return jsonify({"status": "erro", "mensagem": "A instalação ainda não acabou!"}), 400
+            if status == "Cooldown":
+                return jsonify({"status": "erro", "mensagem": "O software ainda está bloqueado em cooldown."}), 400
+                
+            # Adicionar as recompensas corretas ao utilizador (usando as chaves certas da tua CONFIG_SOFTWARE)
+            novo_dados = current_user.dados + config["recompensa_dados"]
+            novo_crypto = current_user.crypto + config["recompensa_crypto"]
+            
+            cursor.execute("UPDATE USER SET DADOS = ?, CRYPTO = ? WHERE USERNAME = ?", (novo_dados, novo_crypto, current_user.username))
+            
+            # Passar o slot para estado de Cooldown (usando o tempo_espera da tua configuração)
+            fim_cooldown = agora + config["tempo_espera"]
+            cursor.execute(
+                "UPDATE SERVIDORES SET STATUS = 'Cooldown', FIM_TAREFA = ? WHERE USERNAME = ? AND SLOT_ID = ?",
+                (fim_cooldown, current_user.username, slot_id)
+            )
+            connection.commit()
+            
+            # Atualizar os valores na sessão atual do utilizador logado
+            current_user.dados = novo_dados
+            current_user.crypto = novo_crypto
+            
+        return jsonify({
+            "status": "sucesso", 
+            "mensagem": f"Sucesso! Recebeste {config['recompensa_dados']} TB de dados e {config['recompensa_crypto']} ₿ Cripto."
+        })
+    except Exception as e:
+        print(f"Erro em receber_recompensa: {e}")
+        return jsonify({"status": "erro", "mensagem": "Erro interno ao processar recompensa."}), 500
+    
+@login_required
+def comprar_estrutura():
+    dados_recebidos = request.get_json() or {}
+    slot_id = int(dados_recebidos.get("slot_id", 0))
+    
+    mapeamento_slots = {
+        1: "Trojan",
+        2: "Servidor",
+        3: "Fórum da Dark Web"
+    }
+    
+    if slot_id not in mapeamento_slots:
+        return jsonify({"status": "erro", "mensagem": "Slot inválido."}), 400
+        
+    tipo_software = mapeamento_slots[slot_id]
+    config = CONFIG_SOFTWARE[tipo_software]
+    
+    if current_user.dados < config["custo_dados"] or current_user.crypto < config["custo_crypto"]:
+        return jsonify({"status": "erro", "mensagem": "Recursos insuficientes!"}), 400
+        
+    db = current_app.config["db"]
+    import sqlite3 as dbapi2
+    
+    # Deduzir custos
+    novo_dados = current_user.dados - config["custo_dados"]
+    novo_crypto = current_user.crypto - config["custo_crypto"]
+    
+    try:
+        with dbapi2.connect(db.dbfile) as connection:
+            cursor = connection.cursor()
+            
+            # Apagar o que estava no slot anteriormente (se houver) para fazer overwrite/upgrade
+            cursor.execute("DELETE FROM SERVIDORES WHERE USERNAME = ? AND SLOT_ID = ?", (current_user.username, slot_id))
+            
+            # Deduzir o saldo na tabela USER
+            cursor.execute("UPDATE USER SET DADOS = ?, CRYPTO = ? WHERE USERNAME = ?", (novo_dados, novo_crypto, current_user.username))
+            
+            # Inserir o novo gerador permanente ativo
+            cursor.execute(
+                "INSERT INTO SERVIDORES (USERNAME, SLOT_ID, TIPO_SERVIDOR, STATUS, FIM_TAREFA) VALUES (?, ?, ?, 'Ativo', 0)",
+                (current_user.username, slot_id, tipo_software)
+            )
+            connection.commit()
+            
+            current_user.dados = novo_dados
+            current_user.crypto = novo_crypto
+            
+        return jsonify({"status": "sucesso", "mensagem": f"{tipo_software} ativado com sucesso!"})
+    except Exception as e:
+        print(f"Erro ao comprar: {e}")
+        return jsonify({"status": "erro", "mensagem": "Erro interno do servidor."}), 500

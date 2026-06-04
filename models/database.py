@@ -103,3 +103,19 @@ class Database:
         except Exception as e:
             print(f"Erro ao guardar recursos: {e}")
             return False
+
+    def insert_server(self, username, slot_id, tipo_servidor, status, fim_tarefa):
+        """Cria uma nova construção num determinado slot"""
+        with dbapi2.connect(self.dbfile) as connection:
+            cursor = connection.cursor()
+            query = "INSERT INTO SERVIDORES (USERNAME, SLOT_ID, TIPO_SERVIDOR, STATUS, FIM_TAREFA) VALUES (?, ?, ?, ?, ?)"
+            cursor.execute(query, (username, slot_id, tipo_servidor, status, fim_tarefa))
+            connection.commit()
+
+    def update_server_status(self, username, slot_id, status, fim_tarefa=None):
+        """Atualiza o estado e o timestamp de um slot específico"""
+        with dbapi2.connect(self.dbfile) as connection:
+            cursor = connection.cursor()
+            query = "UPDATE SERVIDORES SET STATUS = ?, FIM_TAREFA = ? WHERE USERNAME = ? AND SLOT_ID = ?"
+            cursor.execute(query, (status, fim_tarefa, username, slot_id))
+            connection.commit()

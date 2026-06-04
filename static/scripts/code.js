@@ -1,5 +1,8 @@
 // Esperar que o DOM esteja carregado
 document.addEventListener('DOMContentLoaded', function () {
+
+    atualizarContadoresRegressivos();
+    setInterval(atualizarContadoresRegressivos, 1000);
     
     // ==========================================
     // 1. LÓGICA DO OLHO DA PASSWORD
@@ -31,6 +34,9 @@ document.addEventListener('DOMContentLoaded', function () {
         // CARREGAR ESTADO INICIAL
         let crypto = parseInt(window.INITIAL_CRYPTO || 0, 10);
         let dados = parseInt(window.INITIAL_DADOS || 0, 10);
+
+        //const fpsDados = parseInt(prodElement.getAttribute('data-fps-dados') || 1, 10);
+        //const fpsCrypto = parseInt(prodElement.getAttribute('data-fps-crypto') || 0, 10);
 
         // FUNÇÃO PARA ATUALIZAR O ECRÃ
         function atualizarEcra() {
@@ -178,3 +184,110 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 });
+
+function atualizarContadoresRegressivos() {
+    const agora = Math.floor(Date.now() / 1000); // Timestamp Unix atual em segundos
+    const cards = document.querySelectorAll(".slot-card");
+
+    cards.forEach(card => {
+        const status = card.getAttribute("data-status");
+        const fim = parseInt(card.getAttribute("data-fim"), 10);
+        const slotId = card.getAttribute("data-slot-id");
+        
+        const timerDisplay = card.querySelector(".timer-display");
+        const btnContainer = card.querySelector(".button-container");
+
+        // Se o slot estiver livre ou não tiver dados válidos, não faz nada
+        if (!status || !fim || status === "Livre") return;
+
+        const tempoRestante = fim - agora;
+
+        if (status === "Em Construcão") {
+            if (tempoRestante > 0) {
+                if (timerDisplay) timerDisplay.innerText = `⏳ A Instalar: ${tempoRestante}s`;
+            } else {
+                // O tempo esgotou! Transforma o estado do slot em "Pronto" imediatamente
+                card.setAttribute("data-status", "Pronto");
+                card.style.borderColor = "#00ffcc"; // Altera a borda para verde
+                
+                if (timerDisplay) timerDisplay.innerText = "✅ Concluído!";
+                if (btnContainer) {
+                    btnContainer.innerHTML = `
+                        <button class="action-btn btn-registar" style="font-size: 11px; padding: 6px; margin: 0; width: 100%; color: #00ffcc; border-color: #00ffcc; cursor: pointer;" onclick="receberRecompensa(${slotId})">
+                            Receber
+                        </button>
+                    `;
+                }
+            }
+        } else if (status === "Cooldown") {
+            if (tempoRestante > 0) {
+                if (timerDisplay) timerDisplay.innerText = `🔒 Bloqueado: ${tempoRestante}s`;
+            } else {
+                // O tempo de cooldown acabou! Faz um recarregamento automático 
+                // para que o Flask limpe o slot na BD e o devolva ao estado "Livre"
+                window.location.reload();
+            }
+        }
+    });
+}
+
+function comprarEstrutura(slotId) {
+    fetch("/comprar-estrutura", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ 
+            slot_id: parseInt(slotId)
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === "sucesso") {
+            alert(data.mensagem);
+            window.location.reload();
+        } else {
+            alert(data.mensagem);
+        }
+    })
+    .catch(error => {
+        console.error("Erro:", error);
+        alert("Erro ao comunicar com o servidor.");
+    });
+}
+
+function receberRecompensa(slotId) {
+    fetch("/receber-recompensa", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slot_id: slotId })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "sucesso") {
+            alert(data.mensagem || "Recursos extraídos!");
+            window.location.reload();
+        } else {
+            alert(data.mensagem);
+        }
+    })
+    .catch(error => console.error("Erro:", error));
+}
+
+function iniciarTarefa(slotId) {
+    fetch("/iniciar-tarefa", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slot_id: slotId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === "sucesso") {
+            alert("Tarefa iniciada!");
+            window.location.reload();
+        } else {
+            alert(data.mensagem);
+        }
+    })
+    .catch(error => console.error("Erro:", error));
+}

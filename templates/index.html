@@ -1,17 +1,19 @@
 <!DOCTYPE html>
 <html lang="pt">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DASHBOARD - Cyber Breach</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
 </head>
+
 <body>
     <div class="login-container">
         <div class="efeito-luz-pisca"></div>
-        
+
         <div class="login-box" style="width: 450px; text-align: center; padding-bottom: 20px;">
-    
+
             <div class="header-container">
                 <img src="/static/images/titulo_cyberbreach.png" alt="Logo">
             </div>
@@ -21,103 +23,121 @@
                 <hr class="linha-divisoria">
 
                 {% if current_user.is_authenticated %}
-                    
-                    <p style="color: #00ffcc; font-weight: bold; font-size: 18px; margin-bottom: 5px;">
-                        Bem-vindo, {{ current_user.username }}!
-                    </p>
-                    <p style="font-size: 13px; color: #aaa; margin-bottom: 15px;">Acesso autenticado no sistema.</p>
 
-                    <button id="btn-logout" class="btn-registar" style="width: 100%; padding: 8px; font-size: 12px; cursor: pointer; color: #ff4d4d; border-color: #ff4d4d; background: transparent; margin-bottom: 20px;">
-                        Desconectar (Logout)
+                <p style="color: #00ffcc; font-weight: bold; font-size: 18px; margin-bottom: 5px;">
+                    Bem-vindo, {{ current_user.username }}!
+                </p>
+                <p style="font-size: 13px; color: #aaa; margin-bottom: 15px;">Acesso autenticado no sistema.</p>
+
+                <button id="btn-logout" class="btn-registar"
+                    style="width: 100%; padding: 8px; font-size: 12px; cursor: pointer; color: #ff4d4d; border-color: #ff4d4d; background: transparent; margin-bottom: 20px;">
+                    Desconectar (Logout)
+                </button>
+
+                <div
+                    style="display: flex; justify-content: space-around; background-color: rgba(0,0,0,0.8); padding: 12px; border: 1px solid #00ffcc; border-radius: 4px; margin-bottom: 20px; box-shadow: 0 0 10px rgba(0, 255, 204, 0.2);">
+                    <div style="text-align: center;">
+                        <span style="display: block; font-size: 11px; color: #aaa; text-transform: uppercase;">Saldo
+                            Cripto</span>
+                        <span style="color: gold; font-weight: bold; font-size: 18px;">₿ <span id="val-crypto">{{
+                                current_user.crypto }}</span></span>
+                    </div>
+                    <div style="text-align: center;">
+                        <span style="display: block; font-size: 11px; color: #aaa; text-transform: uppercase;">Dados
+                            Roubados</span>
+                        <span style="color: #00ffcc; font-weight: bold; font-size: 18px;">💾 <span id="val-dados">{{
+                                current_user.dados }}</span> TB</span>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 20px;">
+                    <button id="btn-farm-crypto" class="btn-login"
+                        style="padding: 10px; font-size: 12px; cursor: pointer; flex: 1;">
+                        +1 ₿ (Minerar)
                     </button>
-
-                    <div style="display: flex; justify-content: space-around; background-color: rgba(0,0,0,0.8); padding: 12px; border: 1px solid #00ffcc; border-radius: 4px; margin-bottom: 20px; box-shadow: 0 0 10px rgba(0, 255, 204, 0.2);">
-                        <div style="text-align: center;">
-                            <span style="display: block; font-size: 11px; color: #aaa; text-transform: uppercase;">Saldo Cripto</span>
-                            <span style="color: gold; font-weight: bold; font-size: 18px;">₿ <span id="val-crypto">{{ current_user.crypto }}</span></span>
-                        </div>
-                        <div style="text-align: center;">
-                            <span style="display: block; font-size: 11px; color: #aaa; text-transform: uppercase;">Dados Roubados</span>
-                            <span style="color: #00ffcc; font-weight: bold; font-size: 18px;">💾 <span id="val-dados">{{ current_user.dados }}</span> TB</span>
-                        </div>
-                    </div>
-
-                    <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 20px;">
-                        <button id="btn-farm-crypto" class="btn-login" style="padding: 10px; font-size: 12px; cursor: pointer; flex: 1;">
-                            +1 ₿ (Minerar)
-                        </button>
-                        <button id="btn-farm-dados" class="btn-login" style="padding: 10px; font-size: 12px; cursor: pointer; border-color: #00ffcc; color: #00ffcc; flex: 1;">
-                            +1 TB (Extrair)
-                        </button>
-                    </div>
-                    <button id="btn-mega-roubo" class="btn-registar" style="width: 100%; margin-bottom: 20px; padding: 10px; font-size: 12px; cursor: pointer; border-color: #ff4d4d; color: #ff4d4d;">
-                        🚨 Iniciar Mega-Roubo
+                    <button id="btn-farm-dados" class="btn-login"
+                        style="padding: 10px; font-size: 12px; cursor: pointer; border-color: #00ffcc; color: #00ffcc; flex: 1;">
+                        +1 TB (Extrair)
                     </button>
+                </div>
+                <button id="btn-mega-roubo" class="btn-registar"
+                    style="width: 100%; margin-bottom: 20px; padding: 10px; font-size: 12px; cursor: pointer; border-color: #ff4d4d; color: #ff4d4d;">
+                    🚨 Iniciar Mega-Roubo
+                </button>
 
-                    <script>
-                        window.INITIAL_CRYPTO = parseInt("{{ current_user.crypto or 0 }}", 10);
-                        window.INITIAL_DADOS = parseInt("{{ current_user.dados or 0 }}", 10);
-                    </script>
+                <script>
+                    window.INITIAL_CRYPTO = parseInt("{{ current_user.crypto or 0 }}", 10);
+                    window.INITIAL_DADOS = parseInt("{{ current_user.dados or 0 }}", 10);
+                </script>
 
-                    <h3 style="color: white; font-size: 14px; text-align: left; margin-bottom: 10px; letter-spacing: 1px;">⚙️ COFRE DE HARDWARE (SERVERS)</h3>
+                <h3 style="color: white; font-size: 14px; text-align: left; margin-bottom: 10px; letter-spacing: 1px;">
+                    ⚙️ COFRE DE HARDWARE (SERVERS)</h3>
 
-                    <div style="display: flex; gap: 15px; justify-content: space-between; margin-bottom: 20px;">
-                        
-                        {% for slot_id, info in slots.items() %}
-                            
-                            <div style="flex: 1; background-color: rgba(0, 0, 0, 0.7); border: 1px solid #4a545e; border-radius: 4px; padding: 15px; display: flex; flex-direction: column; justify-content: space-between; min-height: 120px; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);">
-                                
-                                <span style="font-size: 10px; color: #666; font-weight: bold; text-align: left; display: block;">SLOT 0{{ slot_id }}</span>
-                                
-                                {% if info.status == 'Livre' %}
-                                    
-                                    <p style="color: #555; font-size: 12px; font-style: italic; margin: 10px 0;">[ Disponível ]</p>
-                                    
-                                    <button class="btn-login" style="font-size: 11px; padding: 6px; margin: 0; width: 100%;">
-                                        Instalar
-                                    </button>
-                                    
-                                {% else %}
-                                    
-                                    <p style="color: #00ffcc; font-weight: bold; font-size: 13px; margin: 10px 0; text-shadow: 0 0 5px rgba(0,255,204,0.3);">
-                                        {{ info.tipo }}
-                                    </p>
-                                    
-                                    <button class="btn-registar" style="font-size: 11px; padding: 6px; margin: 0; width: 100%; color: #00ffcc; border-color: #00ffcc;">
-                                        Gerir
-                                    </button>
-                                    
-                                {% endif %}
-                                
-                            </div>
-                            
-                        {% endfor %}
-                        
+                <div style="display: flex; gap: 15px; justify-content: space-between; margin-bottom: 20px;">
+
+                    {% for slot_id, info in slots.items() %}
+
+                    <div
+                        style="flex: 1; background-color: rgba(0, 0, 0, 0.7); border: 1px solid #4a545e; border-radius: 4px; padding: 15px; display: flex; flex-direction: column; justify-content: space-between; min-height: 120px; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);">
+
+                        <span
+                            style="font-size: 10px; color: #666; font-weight: bold; text-align: left; display: block;">SLOT
+                            0{{ slot_id }}</span>
+
+                        {% if info.status == 'Livre' %}
+
+                        <p style="color: #555; font-size: 12px; font-style: italic; margin: 10px 0;">[ Disponível ]</p>
+
+                        <button class="btn-login" style="font-size: 11px; padding: 6px; margin: 0; width: 100%;">
+                            Instalar
+                        </button>
+
+                        {% else %}
+
+                        <p
+                            style="color: #00ffcc; font-weight: bold; font-size: 13px; margin: 10px 0; text-shadow: 0 0 5px rgba(0,255,204,0.3);">
+                            {{ info.tipo }}
+                        </p>
+
+                        <button class="btn-registar"
+                            style="font-size: 11px; padding: 6px; margin: 0; width: 100%; color: #00ffcc; border-color: #00ffcc;">
+                            Gerir
+                        </button>
+
+                        {% endif %}
+
                     </div>
 
-                    <hr class="linha-divisoria">
+                    {% endfor %}
+
+                </div>
+
+                <hr class="linha-divisoria">
 
                 {% else %}
 
-                    <p style="color: #ff4d4d; font-weight: bold; font-size: 18px; margin-bottom: 5px;">
-                        Acesso Restrito
-                    </p>
-                    <p style="font-size: 13px; color: #aaa; margin-bottom: 20px;">Não tens acesso à rede Cyber Breach.</p>
+                <p style="color: #ff4d4d; font-weight: bold; font-size: 18px; margin-bottom: 5px;">
+                    Acesso Restrito
+                </p>
+                <p style="font-size: 13px; color: #aaa; margin-bottom: 20px;">Não tens acesso à rede Cyber Breach.</p>
 
-                    <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 10px;">
-                        <a href="{{ url_for('login_page') }}" class="btn-login" style="display: block; text-decoration: none; text-align: center;">
-                            Entrar no Sistema
-                        </a>
-                        <a href="{{ url_for('register_page') }}" class="btn-registar" style="display: block; text-decoration: none; text-align: center;">
-                            Novo Hacker (Registar)
-                        </a>
-                    </div>
+                <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 10px;">
+                    <a href="{{ url_for('login_page') }}" class="btn-login"
+                        style="display: block; text-decoration: none; text-align: center;">
+                        Entrar no Sistema
+                    </a>
+                    <a href="{{ url_for('register_page') }}" class="btn-registar"
+                        style="display: block; text-decoration: none; text-align: center;">
+                        Novo Hacker (Registar)
+                    </a>
+                </div>
 
                 {% endif %}
-                
-            </div> </div>
-    </div>
 
-    <script src="{{ url_for('static', filename='scripts/code.js') }}" defer></script>
+            </div>
+        </div>
+
+        <script src="{{ url_for('static', filename='scripts/code.js') }}" defer></script>
 </body>
+
 </html>
