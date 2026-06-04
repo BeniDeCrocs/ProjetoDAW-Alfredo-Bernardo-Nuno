@@ -48,16 +48,22 @@
                 {# PAINEL DE ESTATISTICAS #}
                 <div style="display: flex; justify-content: space-around; background-color: rgba(0,0,0,0.8); padding: 12px; border: 1px solid #00ffcc; border-radius: 4px; margin-bottom: 20px; box-shadow: 0 0 10px rgba(0, 255, 204, 0.2);">
                     
-                    {# ESTATISTICA CRIPTO #}
+                    {# ESTATISTICA CRIPTO COM IMAGEM #}
                     <div style="text-align: center;">
                         <span style="display: block; font-size: 11px; color: #aaa; text-transform: uppercase;">Saldo Cripto</span>
-                        <span style="color: gold; font-weight: bold; font-size: 18px;">₿ <span id="val-crypto">{{ current_user.crypto }}</span></span>
+                        <span style="color: gold; font-weight: bold; font-size: 18px;">
+                            <img src="/static/images/bitcoin_currency2.png" alt="Cripto" style="width: 18px; height: 18px; vertical-align: middle; margin-right: 4px;">
+                            <span id="val-crypto">{{ current_user.crypto }}</span>
+                        </span>
                     </div>
                     
-                    {# ESTATISTICA DADOS #}
+                    {# ESTATISTICA DADOS COM IMAGEM #}
                     <div style="text-align: center;">
                         <span style="display: block; font-size: 11px; color: #aaa; text-transform: uppercase;">Dados Roubados</span>
-                        <span style="color: #00ffcc; font-weight: bold; font-size: 18px;">💾 <span id="val-dados">{{ current_user.dados }}</span> TB</span>
+                        <span style="color: #00ffcc; font-weight: bold; font-size: 18px;">
+                            <img src="/static/images/dados_currency.png" alt="Dados" style="width: 18px; height: 18px; vertical-align: middle; margin-right: 4px;">
+                            <span id="val-dados">{{ current_user.dados }}</span> TB
+                        </span>
                     </div>
                 </div>
 
