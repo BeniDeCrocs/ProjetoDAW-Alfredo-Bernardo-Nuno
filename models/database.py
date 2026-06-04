@@ -6,6 +6,7 @@ class Database:
         self.dbfile = dbfile # Guarda o nome do ficheiro da BD
         self.create_user_table() # Chama o método para criar a tabela se não existir
         self.create_server_table()
+        
     def create_user_table(self):
         with dbapi2.connect(self.dbfile) as connection:
             cursor = connection.cursor()
@@ -89,4 +90,16 @@ class Database:
             cursor.execute(query, (username,))
             # Devolve uma lista de dicionários para ser fácil de usar no HTML
             return [{"slot_id": row[0], "tipo": row[1], "status": row[2], "fim_tarefa": row[3]} for row in cursor.fetchall()]
-        
+
+    def update_user_resources(self, username, crypto, dados):
+        """Atualiza os valores de crypto e dados de um utilizador silenciosamente"""
+        try:
+            with dbapi2.connect(self.dbfile) as connection:
+                cursor = connection.cursor()
+                query = "UPDATE USER SET CRYPTO = ?, DADOS = ? WHERE USERNAME = ?"
+                cursor.execute(query, (crypto, dados, username))
+                connection.commit()
+                return cursor.rowcount > 0
+        except Exception as e:
+            print(f"Erro ao guardar recursos: {e}")
+            return False
