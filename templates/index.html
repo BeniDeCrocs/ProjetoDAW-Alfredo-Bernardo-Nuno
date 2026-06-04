@@ -83,10 +83,12 @@
                     🚨 Iniciar Mega-Roubo
                 </button>
 
-                {# VARIAVEIS JS DO SERVIDOR #}
+                {# VARIAVEIS JS DO SERVIDOR (AGORA COM OS FPS DO PYTHON) #}
                 <script>
                     window.INITIAL_CRYPTO = parseInt("{{ current_user.crypto or 0 }}", 10);
                     window.INITIAL_DADOS = parseInt("{{ current_user.dados or 0 }}", 10);
+                    window.FPS_DADOS = parseInt("{{ total_fps_dados or 1 }}", 10);
+                    window.FPS_CRYPTO = parseInt("{{ total_fps_crypto or 0 }}", 10);
                 </script>
 
                 {# ZONA DE CAIXAS INSTALACAO #}
@@ -98,8 +100,8 @@
                     {# LOOP DOS SERVIDORES #}
                     {% for slot_id, info in slots.items() %}
 
-                    {# CAIXA DO SLOT #}
-                    <div style="flex: 1; background-color: rgba(0, 0, 0, 0.7); border: 1px solid #4a545e; border-radius: 4px; padding: 15px; display: flex; flex-direction: column; justify-content: space-between; min-height: 120px; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);">
+                    {# CAIXA DO SLOT (COM DATA-ATTRIBUTES PARA OS TEMPORIZADORES DO JS) #}
+                    <div class="slot-card" data-slot-id="{{ slot_id }}" data-status="{{ info.status }}" data-fim="{{ info.fim_tarefa }}" style="flex: 1; background-color: rgba(0, 0, 0, 0.7); border: 1px solid #4a545e; border-radius: 4px; padding: 15px; display: flex; flex-direction: column; justify-content: space-between; min-height: 120px; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);">
 
                         {# NUMERO DO SLOT #}
                         <span style="font-size: 10px; color: #666; font-weight: bold; text-align: left; display: block;">SLOT 0{{ slot_id }}</span>
@@ -107,25 +109,37 @@
                         {# CONDICAO SLOT LIVRE #}
                         {% if info.status == 'Livre' %}
 
-                        <p style="color: #555; font-size: 12px; font-style: italic; margin: 10px 0;">[ Disponível ]</p>
+                        <div style="margin: 10px 0; text-align: left;">
+                            <span style="color: #555; font-size: 11px; font-style: italic;">[ Disponível ]</span><br>
+                            <span style="color: #00ffcc; font-size: 10px;">💾 {{ 50 if slot_id == 1 else (150 if slot_id == 2 else 500) }} TB</span><br>
+                            <span style="color: gold; font-size: 10px;">₿ {{ 0 if slot_id == 1 else (50 if slot_id == 2 else 200) }}</span>
+                        </div>
 
-                        {# BOTAO INSTALAR #}
-                        <button class="btn-login" style="font-size: 11px; padding: 6px; margin: 0; width: 100%;">
-                            Instalar
-                        </button>
+                        {# BOTAO INSTALAR LIGADO AO JAVASCRIPT #}
+                        <div class="button-container">
+                            <button class="btn-login" onclick="comprarEstrutura({{ slot_id }})" style="font-size: 11px; padding: 6px; margin: 0; width: 100%; cursor: pointer;">
+                                Instalar
+                            </button>
+                        </div>
 
                         {# CONDICAO SLOT OCUPADO #}
                         {% else %}
 
                         {# TIPO DE HARDWARE #}
-                        <p style="color: #00ffcc; font-weight: bold; font-size: 13px; margin: 10px 0; text-shadow: 0 0 5px rgba(0,255,204,0.3);">
+                        <p style="color: #00ffcc; font-weight: bold; font-size: 13px; margin: 5px 0 0 0; text-shadow: 0 0 5px rgba(0,255,204,0.3);">
                             {{ info.tipo }}
                         </p>
+                        
+                        <p class="timer-display" style="font-size: 10px; color: #aaa; margin: 5px 0; min-height: 15px;">
+                            Status: {{ info.status }}
+                        </p>
 
-                        {# BOTAO GERIR #}
-                        <button class="btn-registar" style="font-size: 11px; padding: 6px; margin: 0; width: 100%; color: #00ffcc; border-color: #00ffcc;">
-                            Gerir
-                        </button>
+                        {# BOTAO DE RECOLHER/GERIR #}
+                        <div class="button-container">
+                            <button class="btn-registar action-btn" onclick="receberRecompensa({{ slot_id }})" style="font-size: 11px; padding: 6px; margin: 0; width: 100%; color: #00ffcc; border-color: #00ffcc; cursor: pointer;">
+                                Gerir / Receber
+                            </button>
+                        </div>
 
                         {% endif %}
 
@@ -138,25 +152,42 @@
                 {# LINHA DIVISORIA #}
                 <hr class="linha-divisoria">
 
-                {# ZONA DE ACESSO RESTRITO #}
+                {# ============================================================== #}
+                {# ZONA DE ACESSO RESTRITO (A TUA PÁGINA INICIAL SEM LOGIN)       #}
+                {# ============================================================== #}
                 {% else %}
 
-                {# MENSAGEM ACESSO RESTRITO #}
-                <p style="color: #ff4d4d; font-weight: bold; font-size: 18px; margin-bottom: 5px;">
-                    Acesso Restrito
-                </p>
-                <p style="font-size: 13px; color: #aaa; margin-bottom: 20px;">Não tens acesso à rede Cyber Breach.</p>
+                <div style="text-align: center; margin-top: 15px;">
+                    
+                    {# MENSAGEM DE ALERTA #}
+                    <p style="color: #ff4d4d; font-weight: bold; font-size: 22px; margin-bottom: 5px; text-shadow: 0 0 10px rgba(255, 77, 77, 0.5); letter-spacing: 2px;">
+                        ⚠️ ACESSO RESTRITO ⚠️
+                    </p>
+                    <p style="font-size: 13px; color: #aaa; margin-bottom: 25px;">
+                        A rede <span style="color: #00ffcc;">Cyber Breach</span> requer autenticação válida.<br>
+                        Por favor, identifica-te para aceder aos servidores.
+                    </p>
 
-                {# BOTOES LOGIN E REGISTO #}
-                <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 10px;">
-                    
-                    <a href="{{ url_for('login_page') }}" class="btn-login" style="display: block; text-decoration: none; text-align: center;">
-                        Entrar no Sistema
-                    </a>
-                    
-                    <a href="{{ url_for('register_page') }}" class="btn-registar" style="display: block; text-decoration: none; text-align: center;">
-                        Novo Hacker (Registar)
-                    </a>
+                    {# BOTOES DE LOGIN E REGISTO (ESTILO COFRE/VAULT) #}
+                    <div style="display: flex; flex-direction: column; gap: 15px; background-color: rgba(0,0,0,0.6); padding: 25px 20px; border: 1px solid #4a545e; border-radius: 4px; box-shadow: inset 0 0 15px rgba(0,0,0,0.8);">
+                        
+                        <a href="{{ url_for('login_page') }}" class="btn-login" style="display: block; text-decoration: none; text-align: center; padding: 12px; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">
+                            🔓 Entrar no Sistema
+                        </a>
+                        
+                        <a href="{{ url_for('register_page') }}" class="btn-registar" style="display: block; text-decoration: none; text-align: center; padding: 12px; font-size: 14px; color: #00ffcc; border-color: #00ffcc; text-transform: uppercase; letter-spacing: 1px;">
+                            📝 Novo Hacker (Registar)
+                        </a>
+
+                    </div>
+
+                    {# DETALHE VISUAL: TERMINAL FALSO #}
+                    <div style="margin-top: 25px; text-align: left; background: #050505; border-left: 2px solid #ff4d4d; padding: 10px; font-family: monospace; font-size: 10px; color: #555;">
+                        > Estabelecendo ligação segura...<br>
+                        > Ping: 12ms<br>
+                        > Estado: <span style="color: #ff4d4d; animation: piscar 1.5s infinite;">A aguardar credenciais...</span>
+                    </div>
+
                 </div>
 
                 {% endif %}

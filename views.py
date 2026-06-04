@@ -3,27 +3,40 @@ from passlib.hash import pbkdf2_sha256 as hasher
 from flask_login import login_required, logout_user, login_user, current_user 
 from user import get_user
 import time
+import sqlite3 as dbapi2
 
+# ======================================================================
 # Configuração de Equilíbrio das Construções (Tempos em segundos)
+# ADICIONADO: recompensa_dados, recompensa_crypto e tempo_espera (Cooldown)
+# ======================================================================
 CONFIG_SOFTWARE = {
     "Trojan": {
         "custo_dados": 50, "custo_crypto": 0,
-        "geracao_dados": 1, "geracao_crypto": 0 # +1 Dado por segundo
+        "geracao_dados": 1, "geracao_crypto": 0,
+        "recompensa_dados": 100, "recompensa_crypto": 10, # O que ganhas ao clicar em Receber
+        "tempo_espera": 60 # Bloqueia por 1 minuto (60s) após receberes
     },
     "Servidor": {
         "custo_dados": 150, "custo_crypto": 50,
-        "geracao_dados": 5, "geracao_crypto": 1 # +5 Dados e +1 Cripto por segundo
+        "geracao_dados": 5, "geracao_crypto": 1,
+        "recompensa_dados": 500, "recompensa_crypto": 50,
+        "tempo_espera": 300 # Bloqueia por 5 minutos (300s)
     },
     "Fórum da Dark Web": {
         "custo_dados": 500, "custo_crypto": 200,
-        "geracao_dados": 20, "geracao_crypto": 5 # +20 Dados e +5 Cripto por segundo
+        "geracao_dados": 20, "geracao_crypto": 5,
+        "recompensa_dados": 2000, "recompensa_crypto": 200,
+        "tempo_espera": 600 # Bloqueia por 10 minutos (600s)
     }
 }
 
-@login_required
 def home_page():
+    # 1. Se NÃO ESTIVER LOGADO (Visitante), devolve o ecrã de Acesso Restrito
+    if not current_user.is_authenticated:
+        return render_template("index.html", slots={}, total_fps_dados=0, total_fps_crypto=0)
+        
+    # 2. SE ESTIVER LOGADO, CARREGA O JOGO NORMALMENTE
     db = current_app.config["db"]
-    import sqlite3 as dbapi2
     
     # Mapeamento fixo: cada slot tem um software específico
     mapeamento_software_por_slot = {
@@ -41,6 +54,7 @@ def home_page():
     
     total_geracao_dados = 1
     total_geracao_crypto = 0
+    agora = int(time.time())
     
     try:
         with dbapi2.connect(db.dbfile) as connection:
@@ -57,11 +71,21 @@ def home_page():
                 status = s["STATUS"]
                 fim_tarefa = s["FIM_TAREFA"] or 0
                 
+                # ==============================================================
+                # MAGIA DE AUTO-REPAIR: Se o cooldown já passou e ele atualizar 
+                # a página, a BD muda o estado de volta para 'Ativo' sozinho!
+                # ==============================================================
+                if status == "Cooldown" and agora >= fim_tarefa:
+                    status = "Ativo"
+                    fim_tarefa = 0
+                    cursor.execute("UPDATE SERVIDORES SET STATUS = 'Ativo', FIM_TAREFA = 0 WHERE USERNAME = ? AND SLOT_ID = ?", (current_user.username, slot_id))
+                    connection.commit()
+                
                 if slot_id in slots:
                     config = CONFIG_SOFTWARE.get(tipo_software, {})
                     slots[slot_id] = {
                         "slot_id": slot_id,
-                        "tipo": tipo_software,  # Nome do software (Trojan, Servidor, etc.)
+                        "tipo": tipo_software,
                         "status": status,
                         "fim_tarefa": fim_tarefa,
                         "producao_d": config.get("geracao_dados", 0),
@@ -215,17 +239,14 @@ def recover_page():
 
 @login_required
 def salvar_progresso():
-    # 1. Receber os dados em formato JSON que o JS enviou
     dados_recebidos = request.get_json()
     
     if not dados_recebidos:
         return jsonify({"status": "erro", "mensagem": "Nenhum dado recebido"}), 400
 
-    # 2. Extrair os valores
     novo_crypto = dados_recebidos.get("crypto", 0)
     novos_dados = dados_recebidos.get("dados", 0)
 
-    # 3. Guardar na BD
     db = current_app.config["db"]
     sucesso = db.update_user_resources(current_user.username, novo_crypto, novos_dados)
 
@@ -249,16 +270,13 @@ def construir():
     db = current_app.config["db"]
     user_data = db.get_user(current_user.username)
 
-    # Validar recursos no Servidor (Segurança obrigatória do guião!)
     if user_data["dados"] < config["custo_dados"] or user_data["crypto"] < config["custo_crypto"]:
         return jsonify({"status": "erro", "mensagem": "Recursos insuficientes!"}), 400
 
-    # Deduzir custos e atualizar utilizador
     novos_dados = user_data["dados"] - config["custo_dados"]
     novo_crypto = user_data["crypto"] - config["custo_crypto"]
     db.update_user_resources(current_user.username, novo_crypto, novos_dados)
 
-    # Calcular quando termina a construção
     fim_construcao = int(time.time()) + config["tempo_construcao"]
     db.insert_server(current_user.username, slot_id, tipo, "A construir", fim_construcao)
 
@@ -299,7 +317,7 @@ def receber_recompensa():
     
     try:
         with dbapi2.connect(db.dbfile) as connection:
-            connection.row_factory = dbapi2.Row  # Permite aceder aos campos por nome
+            connection.row_factory = dbapi2.Row 
             cursor = connection.cursor()
             cursor.execute(
                 "SELECT TIPO_SERVIDOR, STATUS, FIM_TAREFA FROM SERVIDORES WHERE USERNAME = ? AND SLOT_ID = ?", 
@@ -314,29 +332,24 @@ def receber_recompensa():
             status = row["STATUS"]
             fim_tarefa = int(row["FIM_TAREFA"]) if row["FIM_TAREFA"] else 0
             
-            # Ajuste de segurança caso o nome venha ligeiramente diferente do dicionário
             if tipo_software == "Fórum Dark Web" and "Fórum da Dark Web" in CONFIG_SOFTWARE:
                 tipo_software = "Fórum da Dark Web"
 
-            # Validar se o tipo de software existe na configuração
             if tipo_software not in CONFIG_SOFTWARE:
                 return jsonify({"status": "erro", "mensagem": f"Software '{tipo_software}' inválido."}), 400
                 
             config = CONFIG_SOFTWARE[tipo_software]
             
-            # Proteção contra cheats de tempo
             if status == "EmConstrucao" and agora < fim_tarefa:
                 return jsonify({"status": "erro", "mensagem": "A instalação ainda não acabou!"}), 400
             if status == "Cooldown":
                 return jsonify({"status": "erro", "mensagem": "O software ainda está bloqueado em cooldown."}), 400
                 
-            # Adicionar as recompensas corretas ao utilizador (usando as chaves certas da tua CONFIG_SOFTWARE)
             novo_dados = current_user.dados + config["recompensa_dados"]
             novo_crypto = current_user.crypto + config["recompensa_crypto"]
             
             cursor.execute("UPDATE USER SET DADOS = ?, CRYPTO = ? WHERE USERNAME = ?", (novo_dados, novo_crypto, current_user.username))
             
-            # Passar o slot para estado de Cooldown (usando o tempo_espera da tua configuração)
             fim_cooldown = agora + config["tempo_espera"]
             cursor.execute(
                 "UPDATE SERVIDORES SET STATUS = 'Cooldown', FIM_TAREFA = ? WHERE USERNAME = ? AND SLOT_ID = ?",
@@ -344,13 +357,12 @@ def receber_recompensa():
             )
             connection.commit()
             
-            # Atualizar os valores na sessão atual do utilizador logado
             current_user.dados = novo_dados
             current_user.crypto = novo_crypto
             
         return jsonify({
             "status": "sucesso", 
-            "mensagem": f"Sucesso! Recebeste {config['recompensa_dados']} TB de dados e {config['recompensa_crypto']} ₿ Cripto."
+            "mensagem": f"Sucesso! Extraíste {config['recompensa_dados']} TB de dados e {config['recompensa_crypto']} ₿ Cripto."
         })
     except Exception as e:
         print(f"Erro em receber_recompensa: {e}")
@@ -379,7 +391,6 @@ def comprar_estrutura():
     db = current_app.config["db"]
     import sqlite3 as dbapi2
     
-    # Deduzir custos
     novo_dados = current_user.dados - config["custo_dados"]
     novo_crypto = current_user.crypto - config["custo_crypto"]
     
@@ -387,13 +398,10 @@ def comprar_estrutura():
         with dbapi2.connect(db.dbfile) as connection:
             cursor = connection.cursor()
             
-            # Apagar o que estava no slot anteriormente (se houver) para fazer overwrite/upgrade
             cursor.execute("DELETE FROM SERVIDORES WHERE USERNAME = ? AND SLOT_ID = ?", (current_user.username, slot_id))
             
-            # Deduzir o saldo na tabela USER
             cursor.execute("UPDATE USER SET DADOS = ?, CRYPTO = ? WHERE USERNAME = ?", (novo_dados, novo_crypto, current_user.username))
             
-            # Inserir o novo gerador permanente ativo
             cursor.execute(
                 "INSERT INTO SERVIDORES (USERNAME, SLOT_ID, TIPO_SERVIDOR, STATUS, FIM_TAREFA) VALUES (?, ?, ?, 'Ativo', 0)",
                 (current_user.username, slot_id, tipo_software)
