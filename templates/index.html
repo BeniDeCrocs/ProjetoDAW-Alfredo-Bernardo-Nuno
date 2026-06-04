@@ -48,22 +48,25 @@
                 {# PAINEL DE ESTATISTICAS #}
                 <div style="display: flex; justify-content: space-around; background-color: rgba(0,0,0,0.8); padding: 12px; border: 1px solid #00ffcc; border-radius: 4px; margin-bottom: 20px; box-shadow: 0 0 10px rgba(0, 255, 204, 0.2);">
                     
-                    {# ESTATISTICA CRIPTO COM IMAGEM #}
+                    {# ESTATISTICA CRIPTO COM IMAGEM PERFEITAMENTE ALINHADA #}
                     <div style="text-align: center;">
-                        <span style="display: block; font-size: 11px; color: #aaa; text-transform: uppercase;">Saldo Cripto</span>
-                        <span style="color: gold; font-weight: bold; font-size: 18px;">
-                            <img src="/static/images/bitcoin_currency2.png" alt="Cripto" style="width: 18px; height: 18px; vertical-align: middle; margin-right: 4px;">
+                        <span style="display: block; font-size: 11px; color: #aaa; text-transform: uppercase; margin-bottom: 6px;">Saldo Cripto</span>
+                        
+                        <div style="display: flex; align-items: center; justify-content: center; color: gold; font-weight: bold; font-size: 18px;">
+                            <img src="/static/images/bitcoin_currency2.png" alt="Cripto" style="width: 20px; height: 20px; margin-right: 6px;">
                             <span id="val-crypto">{{ current_user.crypto }}</span>
-                        </span>
+                        </div>
                     </div>
                     
-                    {# ESTATISTICA DADOS COM IMAGEM #}
+                    {# ESTATISTICA DADOS COM IMAGEM PERFEITAMENTE ALINHADA #}
                     <div style="text-align: center;">
-                        <span style="display: block; font-size: 11px; color: #aaa; text-transform: uppercase;">Dados Roubados</span>
-                        <span style="color: #00ffcc; font-weight: bold; font-size: 18px;">
-                            <img src="/static/images/dados_currency.png" alt="Dados" style="width: 18px; height: 18px; vertical-align: middle; margin-right: 4px;">
-                            <span id="val-dados">{{ current_user.dados }}</span> TB
-                        </span>
+                        <span style="display: block; font-size: 11px; color: #aaa; text-transform: uppercase; margin-bottom: 6px;">Dados Roubados</span>
+                        
+                        <div style="display: flex; align-items: center; justify-content: center; color: #00ffcc; font-weight: bold; font-size: 18px;">
+                            <img src="/static/images/dados_currency.png" alt="Dados" style="width: 20px; height: 20px; margin-right: 6px;">
+                            <span id="val-dados">{{ current_user.dados }}</span>
+                            <span style="margin-left: 5px;">TB</span>
+                        </div>
                     </div>
                 </div>
 
