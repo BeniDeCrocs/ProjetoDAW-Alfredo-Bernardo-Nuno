@@ -55,6 +55,8 @@
                         <div style="display: flex; align-items: center; justify-content: center; color: gold; font-weight: bold; font-size: 18px;">
                             <img src="/static/images/bitcoin_currency2.png" alt="Cripto" style="width: 20px; height: 20px; margin-right: 6px;">
                             <span id="val-crypto">{{ current_user.crypto }}</span>
+                            {# Indicação visual da Geração Passiva #}
+                            <span style="font-size: 11px; color: #888; margin-left: 5px;">(+{{ total_fps_crypto }}/s)</span>
                         </div>
                     </div>
                     
@@ -66,6 +68,8 @@
                             <img src="/static/images/dados_currency.png" alt="Dados" style="width: 20px; height: 20px; margin-right: 6px;">
                             <span id="val-dados">{{ current_user.dados }}</span>
                             <span style="margin-left: 5px;">TB</span>
+                            {# Indicação visual da Geração Passiva #}
+                            <span style="font-size: 11px; color: #888; margin-left: 5px;">(+{{ total_fps_dados }}/s)</span>
                         </div>
                     </div>
                 </div>
@@ -100,50 +104,78 @@
                 {# CONTENTOR DOS SLOTS #}
                 <div style="display: flex; gap: 15px; justify-content: space-between; margin-bottom: 20px;">
 
-                    {# LOOP DOS SERVIDORES #}
+                    {# LOOP DOS SERVIDORES (ORDENADOS POR SLOT 1, 2, 3) #}
                     {% for slot_id, info in slots.items() %}
 
-                    {# CAIXA DO SLOT (COM DATA-ATTRIBUTES PARA OS TEMPORIZADORES DO JS) #}
-                    <div class="slot-card" data-slot-id="{{ slot_id }}" data-status="{{ info.status }}" data-fim="{{ info.fim_tarefa }}" style="flex: 1; background-color: rgba(0, 0, 0, 0.7); border: 1px solid #4a545e; border-radius: 4px; padding: 15px; display: flex; flex-direction: column; justify-content: space-between; min-height: 120px; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);">
+                    {# CAIXA DO SLOT #}
+                    
+                    {# 1. Definir a cor da borda fora do HTML para não bugar o editor #}
+                    {% set cor_borda = '#ff4d4d' %}
+                    {% if info.status == 'Ativo' %}
+                        {% set cor_borda = '#00ffcc' %}
+                    {% elif info.status == 'Livre' %}
+                        {% set cor_borda = '#4a545e' %}
+                    {% endif %}
 
-                        {# NUMERO DO SLOT #}
+                    {# 2. A div agora usa apenas a variável {{ cor_borda }} e está dividida em várias linhas #}
+                    <div class="slot-card" 
+                         data-slot-id="{{ slot_id }}" 
+                         data-status="{{ info.status }}" 
+                         data-fim="{{ info.fim_tarefa }}" 
+                         style="flex: 1; background-color: rgba(0, 0, 0, 0.7); border: 1px solid '{{ cor_borda }}'; border-radius: 4px; padding: 15px; display: flex; flex-direction: column; justify-content: space-between; min-height: 120px; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);">
                         <span style="font-size: 10px; color: #666; font-weight: bold; text-align: left; display: block;">SLOT 0{{ slot_id }}</span>
-
-                        {# CONDICAO SLOT LIVRE #}
-                        {% if info.status == 'Livre' %}
-
-                        <div style="margin: 10px 0; text-align: left;">
-                            <span style="color: #555; font-size: 11px; font-style: italic;">[ Disponível ]</span><br>
-                            <span style="color: #00ffcc; font-size: 10px;">💾 {{ 50 if slot_id == 1 else (150 if slot_id == 2 else 500) }} TB</span><br>
-                            <span style="color: gold; font-size: 10px;">₿ {{ 0 if slot_id == 1 else (50 if slot_id == 2 else 200) }}</span>
-                        </div>
-
-                        {# BOTAO INSTALAR LIGADO AO JAVASCRIPT #}
-                        <div class="button-container">
-                            <button class="btn-login" onclick="comprarEstrutura({{ slot_id }})" style="font-size: 11px; padding: 6px; margin: 0; width: 100%; cursor: pointer;">
-                                Instalar
-                            </button>
-                        </div>
-
-                        {# CONDICAO SLOT OCUPADO #}
-                        {% else %}
-
-                        {# TIPO DE HARDWARE #}
+                        
+                        {# O NOME ESTÁ SEMPRE VISÍVEL #}
                         <p style="color: #00ffcc; font-weight: bold; font-size: 13px; margin: 5px 0 0 0; text-shadow: 0 0 5px rgba(0,255,204,0.3);">
                             {{ info.tipo }}
                         </p>
-                        
-                        <p class="timer-display" style="font-size: 10px; color: #aaa; margin: 5px 0; min-height: 15px;">
-                            Status: {{ info.status }}
-                        </p>
 
-                        {# BOTAO DE RECOLHER/GERIR #}
+                        {# CONDICAO: LIVRE (Pronto a Comprar) #}
+                        {% if info.status == 'Livre' %}
+                        <div style="margin: 10px 0; text-align: left;">
+                            <span style="color: #555; font-size: 10px;">Potência: +{{ config[info.tipo].geracao_dados }}D | +{{ config[info.tipo].geracao_crypto }}C /seg</span><br>
+                            <span style="color: #00ffcc; font-size: 10px;">Custo: 💾 {{ config[info.tipo].custo_dados }} TB</span> | 
+                            <span style="color: gold; font-size: 10px;">₿ {{ config[info.tipo].custo_crypto }}</span>
+                        </div>
                         <div class="button-container">
-                            <button class="btn-registar action-btn" onclick="receberRecompensa({{ slot_id }})" style="font-size: 11px; padding: 6px; margin: 0; width: 100%; color: #00ffcc; border-color: #00ffcc; cursor: pointer;">
-                                Gerir / Receber
+                            <button class="btn-login" onclick="comprarEstrutura('{{ slot_id }}')" style="font-size: 11px; padding: 6px; margin: 0; width: 100%; cursor: pointer;">
+                                Comprar
                             </button>
                         </div>
 
+                        {# CONDICAO: EM CONSTRUÇÃO #}
+                        {% elif info.status == 'EmConstrucao' %}
+                        <p class="timer-display" style="font-size: 11px; color: #ffc107; margin: 10px 0; font-weight: bold;">
+                            ⏳ A Instalar...
+                        </p>
+                        <div class="button-container">
+                            <button class="action-btn" style="font-size: 11px; padding: 6px; margin: 0; width: 100%; opacity: 0.5; cursor: not-allowed;" disabled>
+                                A Processar
+                            </button>
+                        </div>
+
+                        {# CONDICAO: ATIVO (A GERAR RECURSOS) #}
+                        {% elif info.status == 'Ativo' %}
+                        <div style="margin: 10px 0; text-align: left;">
+                            <span style="color: #00ffcc; font-size: 11px; font-weight: bold;">⚡ Operacional</span><br>
+                            <span style="color: #aaa; font-size: 10px;">A gerar +{{ info.producao_d }}D e +{{ info.producao_c }}C</span>
+                        </div>
+                        <div class="button-container">
+                            <button class="btn-registar action-btn" onclick="venderEstrutura('{{ slot_id }}')" style="font-size: 11px; padding: 6px; margin: 0; width: 100%; color: #ff4d4d; border-color: #ff4d4d; cursor: pointer;">
+                                Desligar e Vender
+                            </button>
+                        </div>
+                        
+                        {# CONDICAO: COOLDOWN DE VENDA #}
+                        {% elif info.status == 'CooldownVenda' %}
+                        <p class="timer-display" style="font-size: 11px; color: #ff4d4d; margin: 10px 0; font-weight: bold;">
+                            🔒 Em Manutenção...
+                        </p>
+                        <div class="button-container">
+                            <button class="action-btn" style="font-size: 11px; padding: 6px; margin: 0; width: 100%; opacity: 0.5; cursor: not-allowed; border-color: #ff4d4d; color: #ff4d4d;" disabled>
+                                Bloqueado
+                            </button>
+                        </div>
                         {% endif %}
 
                     </div>

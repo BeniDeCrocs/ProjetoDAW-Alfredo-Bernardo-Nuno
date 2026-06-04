@@ -16,8 +16,8 @@ class Database:
                 ID INTEGER PRIMARY KEY AUTOINCREMENT,
                 USERNAME TEXT UNIQUE NOT NULL,
                 PASSWORD TEXT NOT NULL,
-                CRYPTO INTEGER DEFAULT 200, 
-                DADOS INTEGER DEFAULT 200
+                CRYPTO INTEGER DEFAULT 0, 
+                DADOS INTEGER DEFAULT 50
             )
             """)
             connection.commit()
@@ -44,7 +44,7 @@ class Database:
             cursor = connection.cursor()
             try:
                 #Tenta inserir o utilizador
-                query = "INSERT INTO USER (USERNAME, PASSWORD) VALUES (?, ?)"
+                query = "INSERT INTO USER (USERNAME, PASSWORD, CRYPTO, DADOS) VALUES (?, ?, 0, 50)"
                 cursor.execute(query, (username, hashed_password))
                 connection.commit()
                 return True # Sucesso!

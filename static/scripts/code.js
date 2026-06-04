@@ -1,34 +1,24 @@
-// Esperar que o DOM esteja carregado
 document.addEventListener('DOMContentLoaded', function () {
 
-    // ==========================================
-    // 1. LÓGICA DO OLHO DA PASSWORD
-    // ==========================================
     const passwordInput = document.getElementById('password-input');
     const togglePassword = document.getElementById('toggle-password');
-
     if (togglePassword && passwordInput) {
         togglePassword.addEventListener('click', function () {
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
-                togglePassword.innerHTML = '<img src="/static/images/password_escondida.png" alt="Esconder Password" width="24">'; 
+                togglePassword.innerHTML = '<img src="/static/images/password_escondida.png" alt="Esconder" width="24">'; 
             } else {
                 passwordInput.type = 'password';
-                togglePassword.innerHTML = '<img src="/static/images/hacker_password.png" alt="Mostrar Password" width="24">';                
+                togglePassword.innerHTML = '<img src="/static/images/hacker_password.png" alt="Mostrar" width="24">';                
             }
         });
     }
 
-    // ==========================================
-    // 2. LÓGICA DO JOGO E UPGRADES
-    // ==========================================
     const valCryptoElement = document.getElementById('val-crypto');
     const valDadosElement = document.getElementById('val-dados');
 
-    // Só avança se os elementos do saldo existirem no HTML (ou seja, está logado)
     if (valCryptoElement && valDadosElement) {
         
-        // CARREGAR ESTADO INICIAL E FPS
         let crypto = parseInt(window.INITIAL_CRYPTO || 0, 10);
         let dados = parseInt(window.INITIAL_DADOS || 0, 10);
         let fpsDados = parseInt(window.FPS_DADOS || 1, 10);
@@ -39,44 +29,102 @@ document.addEventListener('DOMContentLoaded', function () {
             valDadosElement.innerText = dados;
         }
 
-        // 3. AÇÕES MANUAIS (Cliques)
-        document.getElementById('btn-farm-crypto').addEventListener('click', function() {
-            crypto += 1;
-            atualizarEcra();
-        });
+        const btnFarmC = document.getElementById('btn-farm-crypto');
+        if (btnFarmC) btnFarmC.addEventListener('click', function() { crypto += 1; atualizarEcra(); });
 
-        document.getElementById('btn-farm-dados').addEventListener('click', function() {
-            dados += 1;
-            atualizarEcra();
-        });
+        const btnFarmD = document.getElementById('btn-farm-dados');
+        if (btnFarmD) btnFarmD.addEventListener('click', function() { dados += 1; atualizarEcra(); });
 
-        // 4. GERAÇÃO AUTOMÁTICA (+X Dados e Cryptos por segundo)
+        // ==========================================
+        // LÓGICA DO MEGA ROUBO
+        // ==========================================
+        const btnMegaRoubo = document.getElementById('btn-mega-roubo');
+        const COOLDOWN_MS = 1 * 60 * 1000; // 1 Minuto de espera. Podes mudar aqui!
+
+        if (btnMegaRoubo) {
+            function verificarCooldown() {
+                const megaRouboStart = localStorage.getItem('megaRouboStart');
+                
+                if (!megaRouboStart) {
+                    btnMegaRoubo.disabled = false;
+                    btnMegaRoubo.style.opacity = '1';
+                    btnMegaRoubo.style.cursor = 'pointer';
+                    btnMegaRoubo.style.borderColor = '#ff4d4d'; 
+                    btnMegaRoubo.style.color = '#ff4d4d';
+                    btnMegaRoubo.innerText = "🚨 Iniciar Mega-Roubo";
+                    return "START";
+                }
+
+                const tempoPassado = Date.now() - parseInt(megaRouboStart);
+
+                if (tempoPassado < COOLDOWN_MS) {
+                    btnMegaRoubo.disabled = true;
+                    btnMegaRoubo.style.opacity = '0.5';
+                    btnMegaRoubo.style.cursor = 'not-allowed';
+
+                    const tempoRestante = COOLDOWN_MS - tempoPassado;
+                    const minutos = Math.floor(tempoRestante / 60000);
+                    const segundos = Math.floor((tempoRestante % 60000) / 1000);
+                    const segFormatados = segundos < 10 ? "0" + segundos : segundos;
+                    
+                    btnMegaRoubo.innerText = `⏳ A extrair... (${minutos}m ${segFormatados}s)`;
+                    return "IN_PROGRESS";
+                } else {
+                    btnMegaRoubo.disabled = false;
+                    btnMegaRoubo.style.opacity = '1';
+                    btnMegaRoubo.style.cursor = 'pointer';
+                    btnMegaRoubo.style.borderColor = '#00ffcc'; 
+                    btnMegaRoubo.style.color = '#00ffcc';
+                    btnMegaRoubo.innerText = "💰 Resgatar Mega-Roubo!";
+                    return "CLAIM";
+                }
+            }
+
+            btnMegaRoubo.addEventListener('click', function() {
+                const estadoAtual = verificarCooldown();
+
+                if (estadoAtual === "START") {
+                    localStorage.setItem('megaRouboStart', Date.now().toString());
+                    verificarCooldown(); 
+                } 
+                else if (estadoAtual === "CLAIM") {
+                    // Recompensas do Mega Roubo (Podes alterar os valores à vontade)
+                    crypto += 50;  
+                    dados += 200;  
+                    atualizarEcra();
+
+                    localStorage.removeItem('megaRouboStart');
+                    verificarCooldown(); 
+                }
+            });
+
+            setInterval(verificarCooldown, 1000);
+            verificarCooldown(); 
+        }
+
+        // Geração Automática
         setInterval(function() {
             dados += fpsDados; 
             crypto += fpsCrypto;
             atualizarEcra();
         }, 1000);
 
-        // 5. A PONTE FANTASMA (Guardar na BD a cada 5 segundos)
         function guardarProgresso() {
             return fetch('/salvar-progresso', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ crypto: crypto, dados: dados })
-            }).then(response => response.json());
+            }).then(r => r.json());
         }
 
         setInterval(function() {
-            guardarProgresso().catch(error => console.error("Falha ao auto-guardar:", error));
+            guardarProgresso().catch(e => console.error("Falha ao guardar:", e));
         }, 5000);
 
         // ==========================================
-        // 6. LÓGICA DA LOJA DE SERVIDORES (Slots)
+        // COMUNICAÇÃO COM O SERVIDOR (Comprar e Vender)
         // ==========================================
-        
-        // Associa as funções ao objeto 'window' para que o HTML as consiga chamar no onclick
         window.comprarEstrutura = function(slotId) {
-            // GRAVA ANTES DE COMPRAR (Para não perder cliques não guardados)
             guardarProgresso().then(() => {
                 return fetch("/comprar-estrutura", {
                     method: "POST",
@@ -84,152 +132,75 @@ document.addEventListener('DOMContentLoaded', function () {
                     body: JSON.stringify({ slot_id: parseInt(slotId) })
                 });
             })
-            .then(response => response.json())
+            .then(r => r.json())
             .then(data => {
-                if (data.status === "sucesso") {
-                    alert(data.mensagem);
-                    window.location.reload(); // Recarrega para ver a nova estrutura e atualizar os FPS
-                } else {
-                    alert("⚠️ " + data.mensagem); // Avisa se não houver saldo
-                }
-            })
-            .catch(error => console.error("Erro:", error));
+                if (data.status === "sucesso") window.location.reload(); 
+                else alert("⚠️ " + data.mensagem); 
+            }).catch(e => console.error(e));
         };
 
-        window.receberRecompensa = function(slotId) {
-            // GRAVA ANTES DE RECOLHER
+        window.venderEstrutura = function(slotId) {
+            if(!confirm("Tens a certeza que queres desligar e vender esta estrutura? Vais perder a geração passiva que ela dá.")) return;
+            
             guardarProgresso().then(() => {
-                return fetch("/receber-recompensa", {
+                return fetch("/vender-estrutura", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ slot_id: parseInt(slotId) })
                 });
             })
-            .then(res => res.json())
+            .then(r => r.json())
             .then(data => {
-                if (data.status === "sucesso") {
-                    alert(data.mensagem || "Recursos extraídos!");
-                    window.location.reload(); // Recarrega para meter a estrutura em Cooldown visual
-                } else {
-                    alert(data.mensagem); // Avisa se estiver bloqueado
-                }
-            })
-            .catch(error => console.error("Erro:", error));
+                if (data.status === "sucesso") window.location.reload(); 
+                else alert(data.mensagem); 
+            }).catch(e => console.error(e));
         };
 
         // ==========================================
-        // 7. LÓGICA DOS TEMPORIZADORES DOS SLOTS
+        // GESTOR DOS CRONÓMETROS DOS SLOTS
         // ==========================================
-        function atualizarContadoresRegressivos() {
+        function atualizarCronometros() {
             const agora = Math.floor(Date.now() / 1000);
             const cards = document.querySelectorAll(".slot-card");
 
             cards.forEach(card => {
                 const status = card.getAttribute("data-status");
                 const fim = parseInt(card.getAttribute("data-fim"), 10);
-                const slotId = card.getAttribute("data-slot-id");
-                
                 const timerDisplay = card.querySelector(".timer-display");
 
-                if (!status || !fim || status === "Livre") return;
+                if (!status || !fim || status === "Livre" || status === "Ativo") return;
 
                 const tempoRestante = fim - agora;
 
-                // Sync com as palavras do Python (A construir, Cooldown, Ativo)
-                if (status === "A construir") {
+                if (status === "EmConstrucao") {
                     if (tempoRestante > 0) {
                         if (timerDisplay) timerDisplay.innerText = `⏳ A Instalar: ${tempoRestante}s`;
                     } else {
-                        if (timerDisplay) timerDisplay.innerText = "✅ Instalação Concluída! (Recarrega a pág)";
-                    }
-                } else if (status === "Cooldown") {
-                    if (tempoRestante > 0) {
-                        if (timerDisplay) timerDisplay.innerText = `🔒 Em Cooldown: ${tempoRestante}s`;
-                    } else {
-                        // Cooldown terminou! Limpa o slot atualizando a página
+                        // Construção Acabou -> Recarrega para gerar recursos
                         window.location.reload();
                     }
-                } else if (status === "Ativo") {
-                    if (timerDisplay) timerDisplay.innerText = "⚡ Gerador Operacional";
+                } else if (status === "CooldownVenda") {
+                    if (tempoRestante > 0) {
+                        if (timerDisplay) timerDisplay.innerText = `🔒 Bloqueado: ${tempoRestante}s`;
+                    } else {
+                        // Cooldown de Venda Acabou -> Recarrega para poder comprar
+                        window.location.reload();
+                    }
                 }
             });
         }
 
-        atualizarContadoresRegressivos();
-        setInterval(atualizarContadoresRegressivos, 1000);
+        atualizarCronometros();
+        setInterval(atualizarCronometros, 1000);
 
         // ==========================================
-        // 8. LÓGICA DO MEGA-ROUBO
-        // ==========================================
-        const btnMegaRoubo = document.getElementById('btn-mega-roubo');
-        const COOLDOWN_MS = 1 * 60 * 1000; 
-
-        function verificarCooldown() {
-            const megaRouboStart = localStorage.getItem('megaRouboStart');
-            if (!megaRouboStart) {
-                btnMegaRoubo.disabled = false;
-                btnMegaRoubo.style.opacity = '1';
-                btnMegaRoubo.style.cursor = 'pointer';
-                btnMegaRoubo.style.borderColor = '#ff4d4d'; 
-                btnMegaRoubo.style.color = '#ff4d4d';
-                btnMegaRoubo.innerText = "🚨 Iniciar Mega-Roubo (Demora 1m)";
-                return "START";
-            }
-
-            const tempoPassado = Date.now() - parseInt(megaRouboStart);
-            if (tempoPassado < COOLDOWN_MS) {
-                btnMegaRoubo.disabled = true;
-                btnMegaRoubo.style.opacity = '0.5';
-                btnMegaRoubo.style.cursor = 'not-allowed';
-                const tempoRestante = COOLDOWN_MS - tempoPassado;
-                const minutos = Math.floor(tempoRestante / 60000);
-                const segundos = Math.floor((tempoRestante % 60000) / 1000);
-                const segFormatados = segundos < 10 ? "0" + segundos : segundos;
-                
-                btnMegaRoubo.innerText = `⏳ A extrair dados... (${minutos}m ${segFormatados}s)`;
-                return "IN_PROGRESS";
-            } else {
-                btnMegaRoubo.disabled = false;
-                btnMegaRoubo.style.opacity = '1';
-                btnMegaRoubo.style.cursor = 'pointer';
-                btnMegaRoubo.style.borderColor = '#00ffcc'; 
-                btnMegaRoubo.style.color = '#00ffcc';
-                btnMegaRoubo.innerText = "💰 Resgatar Mega-Roubo!";
-                return "CLAIM";
-            }
-        }
-
-        btnMegaRoubo.addEventListener('click', function() {
-            const estadoAtual = verificarCooldown();
-            if (estadoAtual === "START") {
-                localStorage.setItem('megaRouboStart', Date.now().toString());
-                verificarCooldown(); 
-            } else if (estadoAtual === "CLAIM") {
-                crypto += 500;
-                dados += 1000;
-                atualizarEcra();
-                localStorage.removeItem('megaRouboStart');
-                verificarCooldown(); 
-            }
-        });
-
-        setInterval(verificarCooldown, 1000);
-        verificarCooldown();
-
-        // ==========================================
-        // 9. LÓGICA DE LOGOUT E LIMPEZA
+        // LOGOUT
         // ==========================================
         const btnLogout = document.getElementById('btn-logout');
-        
         if (btnLogout) {
             btnLogout.addEventListener('click', function() {
-                guardarProgresso().then(() => {
-                    localStorage.removeItem('megaRouboStart');
-                    window.location.href = '/logout';
-                }).catch(() => {
-                    localStorage.removeItem('megaRouboStart');
-                    window.location.href = '/logout';
-                });
+                guardarProgresso().then(() => window.location.href = '/logout')
+                                  .catch(() => window.location.href = '/logout');
             });
         }
     }
