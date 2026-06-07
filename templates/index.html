@@ -33,42 +33,45 @@
                 {# VERIFICACAO DE LOGIN #}
                 {% if current_user.is_authenticated %}
 
-                {# ZONA DE BOAS VINDAS #}
-                <p style="color: #00ffcc; font-weight: bold; font-size: 18px; margin-bottom: 5px;">
-                    Bem-vindo, {{ current_user.username }}!
-                </p>
-                <p style="font-size: 13px; color: #aaa; margin-bottom: 15px;">Acesso autenticado no sistema.</p>
+                {# ZONA DE BOAS VINDAS E LOGOUT #}
+                <div style="background-color: rgba(0, 0, 0, 0.75); padding: 20px; border-radius: 6px; border: 1px solid #222; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
+                    
+                    <p style="color: #00ffcc; font-weight: bold; font-size: 18px; margin-bottom: 5px; text-shadow: 0 0 5px rgba(0, 255, 204, 0.3);">
+                        Bem-vindo, {{ current_user.username }}!
+                    </p>
+                    <p style="font-size: 13px; color: #aaa; margin-bottom: 15px;">
+                        Acesso autenticado no sistema.
+                    </p>
 
-                {# BOTAO DE LOGOUT #}
-                <button id="btn-logout" class="btn-registar"
-                    style="width: 100%; padding: 8px; font-size: 12px; cursor: pointer; color: #ff4d4d; border-color: #ff4d4d; background: transparent; margin-bottom: 20px;">
-                    Desconectar (Logout)
-                </button>
+                    {# BOTAO DE LOGOUT #}
+                    <button id="btn-logout" 
+                        style="width: 100%; display: block; background-color: #000000; color: #db08a7; text-align: center; padding: 12px; font-size: 13px; font-weight: bold; border-radius: 4px; border: 1px solid #111; transition: 0.3s; cursor: pointer;"
+                        onmouseover="this.style.backgroundColor='#111'; this.style.borderColor='#db08a7'; this.style.boxShadow='0 0 10px rgba(219, 8, 167, 0.2)'"
+                        onmouseout="this.style.backgroundColor='#000000'; this.style.borderColor='#111'; this.style.boxShadow='none'">
+                        🚪 Desconectar
+                    </button>
+                </div>
 
                 {# PAINEL DE ESTATISTICAS #}
                 <div style="display: flex; justify-content: space-around; background-color: rgba(0,0,0,0.8); padding: 12px; border: 1px solid #00ffcc; border-radius: 4px; margin-bottom: 20px; box-shadow: 0 0 10px rgba(0, 255, 204, 0.2);">
                     
-                    {# ESTATISTICA CRIPTO COM IMAGEM PERFEITAMENTE ALINHADA #}
+                    {# ESTATISTICA CRIPTO #}
                     <div style="text-align: center;">
                         <span style="display: block; font-size: 11px; color: #aaa; text-transform: uppercase; margin-bottom: 6px;">Saldo Cripto</span>
-                        
                         <div style="display: flex; align-items: center; justify-content: center; color: gold; font-weight: bold; font-size: 18px;">
                             <img src="/static/images/bitcoin_currency2.png" alt="Cripto" style="width: 20px; height: 20px; margin-right: 6px;">
                             <span id="val-crypto">{{ current_user.crypto }}</span>
-                            {# Indicação visual da Geração Passiva #}
                             <span style="font-size: 11px; color: #888; margin-left: 5px;">(+{{ total_fps_crypto }}/s)</span>
                         </div>
                     </div>
                     
-                    {# ESTATISTICA DADOS COM IMAGEM PERFEITAMENTE ALINHADA #}
+                    {# ESTATISTICA DADOS #}
                     <div style="text-align: center;">
                         <span style="display: block; font-size: 11px; color: #aaa; text-transform: uppercase; margin-bottom: 6px;">Dados Roubados</span>
-                        
                         <div style="display: flex; align-items: center; justify-content: center; color: #00ffcc; font-weight: bold; font-size: 18px;">
                             <img src="/static/images/dados_currency.png" alt="Dados" style="width: 20px; height: 20px; margin-right: 6px;">
                             <span id="val-dados">{{ current_user.dados }}</span>
                             <span style="margin-left: 5px;">TB</span>
-                            {# Indicação visual da Geração Passiva #}
                             <span style="font-size: 11px; color: #888; margin-left: 5px;">(+{{ total_fps_dados }}/s)</span>
                         </div>
                     </div>
@@ -76,21 +79,30 @@
 
                 {# BOTOES DE FARMING #}
                 <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 20px;">
-                    <button id="btn-farm-crypto" class="btn-login" style="padding: 10px; font-size: 12px; cursor: pointer; flex: 1;">
+                    <button id="btn-farm-crypto" 
+                        style="flex: 1; display: block; background-color: #000000; color: #ffffff; text-align: center; padding: 12px; font-size: 12px; font-weight: bold; border-radius: 4px; border: 1px solid #111; transition: 0.3s; cursor: pointer;"
+                        onmouseover="this.style.backgroundColor='#111'; this.style.borderColor='#ffffff'; this.style.boxShadow='0 0 10px rgba(255, 255, 255, 0.2)'"
+                        onmouseout="this.style.backgroundColor='#000000'; this.style.borderColor='#111'; this.style.boxShadow='none'">
                         +1 ₿ (Minerar)
                     </button>
-                    <button id="btn-farm-dados" class="btn-login" style="padding: 10px; font-size: 12px; cursor: pointer; border-color: #00ffcc; color: #00ffcc; flex: 1;">
+                    
+                    <button id="btn-farm-dados" 
+                        style="flex: 1; display: block; background-color: #000000; color: #00ffcc; text-align: center; padding: 12px; font-size: 12px; font-weight: bold; border-radius: 4px; border: 1px solid #111; transition: 0.3s; cursor: pointer;"
+                        onmouseover="this.style.backgroundColor='#111'; this.style.borderColor='#00ffcc'; this.style.boxShadow='0 0 10px rgba(0, 255, 204, 0.2)'"
+                        onmouseout="this.style.backgroundColor='#000000'; this.style.borderColor='#111'; this.style.boxShadow='none'">
                         +1 TB (Extrair)
                     </button>
                 </div>
 
                 {# BOTAO MEGA ROUBO #}
-                <button id="btn-mega-roubo" class="btn-registar"
-                    style="width: 100%; margin-bottom: 20px; padding: 10px; font-size: 12px; cursor: pointer; border-color: #ff4d4d; color: #ff4d4d;">
+                <button id="btn-mega-roubo" 
+                    style="width: 100%; display: block; background-color: #000000; color: #db08a7; text-align: center; padding: 12px; margin-bottom: 20px; font-size: 12px; font-weight: bold; border-radius: 4px; border: 1px solid #111; transition: 0.3s; cursor: pointer;"
+                    onmouseover="this.style.backgroundColor='#111'; this.style.borderColor='#db08a7'; this.style.boxShadow='0 0 10px rgba(219, 8, 167, 0.2)'"
+                    onmouseout="this.style.backgroundColor='#000000'; this.style.borderColor='#111'; this.style.boxShadow='none'">
                     🚨 Iniciar Mega-Roubo
                 </button>
 
-                {# VARIAVEIS JS DO SERVIDOR (AGORA COM OS FPS DO PYTHON) #}
+                {# VARIAVEIS JS DO SERVIDOR #}
                 <script>
                     window.INITIAL_CRYPTO = parseInt("{{ current_user.crypto or 0 }}", 10);
                     window.INITIAL_DADOS = parseInt("{{ current_user.dados or 0 }}", 10);
@@ -101,23 +113,13 @@
                 {# ZONA DE CAIXAS INSTALACAO #}
                 <h3 style="color: white; font-size: 14px; text-align: left; margin-bottom: 10px; letter-spacing: 1px;">⚙️ COFRE DE HARDWARE (SERVERS)</h3>
 
-                {# CONTENTOR DOS SLOTS #}
                 <div style="display: flex; gap: 15px; justify-content: space-between; margin-bottom: 20px;">
-
-                    {# LOOP DOS SERVIDORES (ORDENADOS POR SLOT 1, 2, 3) #}
                     {% for slot_id, info in slots.items() %}
-
-                    {# CAIXA DO SLOT #}
                     
-                    {# 1. Definir a cor da borda fora do HTML para não bugar o editor #}
                     {% set cor_borda = '#ff4d4d' %}
-                    {% if info.status == 'Ativo' %}
-                        {% set cor_borda = '#00ffcc' %}
-                    {% elif info.status == 'Livre' %}
-                        {% set cor_borda = '#4a545e' %}
-                    {% endif %}
+                    {% if info.status == 'Ativo' %} {% set cor_borda = '#00ffcc' %}
+                    {% elif info.status == 'Livre' %} {% set cor_borda = '#4a545e' %} {% endif %}
 
-                    {# 2. A div agora usa apenas a variável {{ cor_borda }} e está dividida em várias linhas #}
                     <div class="slot-card" 
                          data-slot-id="{{ slot_id }}" 
                          data-status="{{ info.status }}" 
@@ -125,114 +127,73 @@
                          style="flex: 1; background-color: rgba(0, 0, 0, 0.7); border: 1px solid '{{ cor_borda }}'; border-radius: 4px; padding: 15px; display: flex; flex-direction: column; justify-content: space-between; min-height: 120px; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);">
                         <span style="font-size: 10px; color: #666; font-weight: bold; text-align: left; display: block;">SLOT 0{{ slot_id }}</span>
                         
-                        {# O NOME ESTÁ SEMPRE VISÍVEL #}
                         <p style="color: #00ffcc; font-weight: bold; font-size: 13px; margin: 5px 0 0 0; text-shadow: 0 0 5px rgba(0,255,204,0.3);">
                             {{ info.tipo }}
                         </p>
 
-                        {# CONDICAO: LIVRE (Pronto a Comprar) #}
                         {% if info.status == 'Livre' %}
                         <div style="margin: 10px 0; text-align: left;">
-                            <span style="color: #555; font-size: 10px;">Potência: +{{ config[info.tipo].geracao_dados }}D | +{{ config[info.tipo].geracao_crypto }}C /seg</span><br>
-                            <span style="color: #00ffcc; font-size: 10px;">Custo: 💾 {{ config[info.tipo].custo_dados }} TB</span> | 
+                            <span style="color: #555; font-size: 10px;">+{{ config[info.tipo].geracao_dados }}D | +{{ config[info.tipo].geracao_crypto }}C/s</span><br>
+                            <span style="color: #00ffcc; font-size: 10px;">💾 {{ config[info.tipo].custo_dados }} TB</span> | 
                             <span style="color: gold; font-size: 10px;">₿ {{ config[info.tipo].custo_crypto }}</span>
                         </div>
-                        <div class="button-container">
-                            <button class="btn-login" onclick="comprarEstrutura('{{ slot_id }}')" style="font-size: 11px; padding: 6px; margin: 0; width: 100%; cursor: pointer;">
-                                Comprar
-                            </button>
-                        </div>
+                        <button onclick="comprarEstrutura('{{ slot_id }}')" 
+                            style="width: 100%; display: block; background-color: #000000; color: #ffffff; text-align: center; padding: 8px; font-size: 11px; font-weight: bold; border-radius: 4px; border: 1px solid #111; transition: 0.3s; cursor: pointer;"
+                            onmouseover="this.style.backgroundColor='#111'; this.style.borderColor='#ffffff'; this.style.boxShadow='0 0 10px rgba(255, 255, 255, 0.2)'"
+                            onmouseout="this.style.backgroundColor='#000000'; this.style.borderColor='#111'; this.style.boxShadow='none'">
+                            Comprar
+                        </button>
 
-                        {# CONDICAO: EM CONSTRUÇÃO #}
                         {% elif info.status == 'EmConstrucao' %}
-                        <p class="timer-display" style="font-size: 11px; color: #ffc107; margin: 10px 0; font-weight: bold;">
-                            ⏳ A Instalar...
-                        </p>
-                        <div class="button-container">
-                            <button class="action-btn" style="font-size: 11px; padding: 6px; margin: 0; width: 100%; opacity: 0.5; cursor: not-allowed;" disabled>
-                                A Processar
-                            </button>
-                        </div>
+                        <p class="timer-display" style="font-size: 11px; color: #ffc107; margin: 10px 0; font-weight: bold;">⏳ A Instalar...</p>
+                        <button disabled style="width: 100%; display: block; background-color: #000000; color: #ffc107; padding: 8px; font-size: 11px; font-weight: bold; border-radius: 4px; border: 1px solid #111; opacity: 0.5; cursor: not-allowed;">A Processar</button>
 
-                        {# CONDICAO: ATIVO (A GERAR RECURSOS) #}
                         {% elif info.status == 'Ativo' %}
                         <div style="margin: 10px 0; text-align: left;">
-                            <span style="color: #00ffcc; font-size: 11px; font-weight: bold;">⚡ Operacional</span><br>
-                            <span style="color: #aaa; font-size: 10px;">A gerar +{{ info.producao_d }}D e +{{ info.producao_c }}C</span>
+                            <span style="color: #00ffcc; font-size: 11px; font-weight: bold;">⚡ Operacional</span>
                         </div>
-                        <div class="button-container">
-                            <button class="btn-registar action-btn" onclick="venderEstrutura('{{ slot_id }}')" style="font-size: 11px; padding: 6px; margin: 0; width: 100%; color: #ff4d4d; border-color: #ff4d4d; cursor: pointer;">
-                                Desligar e Vender
-                            </button>
-                        </div>
-                        
-                        {# CONDICAO: COOLDOWN DE VENDA #}
-                        {% elif info.status == 'CooldownVenda' %}
-                        <p class="timer-display" style="font-size: 11px; color: #ff4d4d; margin: 10px 0; font-weight: bold;">
-                            🔒 Em Manutenção...
-                        </p>
-                        <div class="button-container">
-                            <button class="action-btn" style="font-size: 11px; padding: 6px; margin: 0; width: 100%; opacity: 0.5; cursor: not-allowed; border-color: #ff4d4d; color: #ff4d4d;" disabled>
-                                Bloqueado
-                            </button>
-                        </div>
+                        <button onclick="venderEstrutura('{{ slot_id }}')" 
+                            style="width: 100%; display: block; background-color: #000000; color: #ff4d4d; padding: 8px; font-size: 11px; font-weight: bold; border-radius: 4px; border: 1px solid #111; transition: 0.3s; cursor: pointer;"
+                            onmouseover="this.style.backgroundColor='#111'; this.style.borderColor='#ff4d4d'; this.style.boxShadow='0 0 10px rgba(255, 77, 77, 0.2)'"
+                            onmouseout="this.style.backgroundColor='#000000'; this.style.borderColor='#111'; this.style.boxShadow='none'">
+                            Vender
+                        </button>
                         {% endif %}
-
                     </div>
-
                     {% endfor %}
-
                 </div>
 
-                {# LINHA DIVISORIA #}
-                <hr class="linha-divisoria">
-
-                {# ============================================================== #}
-                {# ZONA DE ACESSO RESTRITO (A TUA PÁGINA INICIAL SEM LOGIN)       #}
-                {# ============================================================== #}
                 {% else %}
 
                 <div style="text-align: center; margin-top: 15px;">
-                    
-                    {# MENSAGEM DE ALERTA #}
-                    <p style="color: #ff4d4d; font-weight: bold; font-size: 22px; margin-bottom: 5px; text-shadow: 0 0 10px rgba(255, 77, 77, 0.5); letter-spacing: 2px;">
+                    <p style="color: #db08a7; font-weight: bold; font-size: 22px; margin-bottom: 5px; text-shadow: 0 0 10px rgba(255, 77, 77, 0.5);">
                         ⚠️ ACESSO RESTRITO ⚠️
                     </p>
                     <p style="font-size: 13px; color: #aaa; margin-bottom: 25px;">
-                        A rede <span style="color: #00ffcc;">Cyber Breach</span> requer autenticação válida.<br>
-                        Por favor, identifica-te para aceder aos servidores.
+                        A rede <span style="color: #00ffcc;">Cyber Breach</span> requer autenticação.
                     </p>
 
-                    {# BOTOES DE LOGIN E REGISTO (ESTILO COFRE/VAULT) #}
-                    <div style="display: flex; flex-direction: column; gap: 15px; background-color: rgba(0,0,0,0.6); padding: 25px 20px; border: 1px solid #4a545e; border-radius: 4px; box-shadow: inset 0 0 15px rgba(0,0,0,0.8);">
-                        
-                        <a href="{{ url_for('login_page') }}" class="btn-login" style="display: block; text-decoration: none; text-align: center; padding: 12px; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">
+                    <div style="display: flex; flex-direction: column; gap: 12px; padding: 15px 0;">
+                        <a href="{{ url_for('login_page') }}" 
+                           style="display: block; background-color: #000000; color: #ffffff; text-decoration: none; text-align: center; padding: 16px; font-size: 13px; font-weight: bold; border-radius: 4px; border: 1px solid #111; transition: 0.3s;"
+                           onmouseover="this.style.backgroundColor='#111'; this.style.borderColor='#ffffff'; this.style.boxShadow='0 0 10px rgba(255, 255, 255, 0.2)'"
+                           onmouseout="this.style.backgroundColor='#000000'; this.style.borderColor='#111'; this.style.boxShadow='none'">
                             🔓 Entrar no Sistema
                         </a>
                         
-                        <a href="{{ url_for('register_page') }}" class="btn-registar" style="display: block; text-decoration: none; text-align: center; padding: 12px; font-size: 14px; color: #00ffcc; border-color: #00ffcc; text-transform: uppercase; letter-spacing: 1px;">
-                            📝 Novo Hacker (Registar)
+                        <a href="{{ url_for('register_page') }}" 
+                           style="display: block; background-color: #000000; color: #00ffcc; text-decoration: none; text-align: center; padding: 16px; font-size: 13px; font-weight: bold; border-radius: 4px; border: 1px solid #111; transition: 0.3s;"
+                           onmouseover="this.style.backgroundColor='#111'; this.style.borderColor='#00ffcc'; this.style.boxShadow='0 0 10px rgba(0, 255, 204, 0.2)'"
+                           onmouseout="this.style.backgroundColor='#000000'; this.style.borderColor='#111'; this.style.boxShadow='none'">
+                            📝 Novo Hacker
                         </a>
-
                     </div>
-
-                    {# DETALHE VISUAL: TERMINAL FALSO #}
-                    <div style="margin-top: 25px; text-align: left; background: #050505; border-left: 2px solid #ff4d4d; padding: 10px; font-family: monospace; font-size: 10px; color: #555;">
-                        > Estabelecendo ligação segura...<br>
-                        > Ping: 12ms<br>
-                        > Estado: <span style="color: #ff4d4d; animation: piscar 1.5s infinite;">A aguardar credenciais...</span>
-                    </div>
-
                 </div>
 
                 {% endif %}
-
             </div>
         </div>
-
-        {# SCRIPT JS EXTERNO #}
         <script src="{{ url_for('static', filename='scripts/code.js') }}" defer></script>
     </div>
 </body>
-
 </html>

@@ -49,8 +49,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     btnMegaRoubo.disabled = false;
                     btnMegaRoubo.style.opacity = '1';
                     btnMegaRoubo.style.cursor = 'pointer';
-                    btnMegaRoubo.style.borderColor = '#ff4d4d'; 
-                    btnMegaRoubo.style.color = '#ff4d4d';
+                    btnMegaRoubo.style.borderColor = '#db08a7'; 
+                    btnMegaRoubo.style.color = '#db08a7';
                     btnMegaRoubo.innerText = "🚨 Iniciar Mega-Roubo";
                     return "START";
                 }

@@ -120,13 +120,13 @@ html, body {
     vertical-align: middle;
 }
 
-/* 2. O que acontece QUANDO CLICAS (:checked) */
+/* O que acontece QUANDO CLICAS (:checked) */
 .opcoes-checkbox-link input[type="checkbox"]:checked {
     background-color: rgba(255, 255, 255, 0.1); 
     border-color: #4a545e;
 }
 
-/* 3. Desenhar o "Visto" (Checkmark) branco à mão usando CSS */
+/* Desenhar o "Visto" branco à mão usando CSS */
 .opcoes-checkbox-link input[type="checkbox"]:checked::after {
     content: '';
     position: absolute;
