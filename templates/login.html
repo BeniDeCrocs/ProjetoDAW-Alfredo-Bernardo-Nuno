@@ -8,7 +8,8 @@
 </head>
 <body>
     <div class="login-container bg-auth">
-        <div class="efeito-luz-pisca"></div>
+        {# DIV DE PISCAR A TESTAR SE RETIRO OU NAO#}
+        
         <div class="login-box" style="width: 450px; text-align: center; padding-bottom: 20px;">
             <div class="header-container">
                 <img src="/static/images/titulo_cyberbreach.png" alt="Logo">
@@ -27,7 +28,7 @@
                         </label>
                         <a href="{{ url_for('recover_page') }}" style="color: #ff4d4d; font-size: 12px;">Esqueci a password</a>
                     </div>
-                    
+
                     <button type="submit" style="width: 100%; background-color: #000000; color: #00ffcc; padding: 12px; font-weight: bold; border-radius: 4px; border: 1px solid #111; cursor: pointer; transition: 0.3s;" onmouseover="this.style.backgroundColor='#111'; this.style.borderColor='#00ffcc'" onmouseout="this.style.backgroundColor='#000000'; this.style.borderColor='#111'">Entrar no Sistema</button>
                 </form>
 

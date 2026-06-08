@@ -4,6 +4,7 @@ from flask_login import login_required, logout_user, login_user, current_user
 from user import get_user
 import time
 import sqlite3 as dbapi2
+import math
 
 CONFIG_SOFTWARE = {
     "Trojan": {
@@ -145,39 +146,48 @@ def comprar_estrutura():
 
 @login_required
 def vender_estrutura():
-    dados_recebidos = request.get_json() or {}
-    slot_id = int(dados_recebidos.get("slot_id", 0))
+    # Receber o JSON enviado pelo code.js
+    dados_pedido = request.get_json()
+    slot_id = dados_pedido.get("slot_id")
     
-    # Descobrir qual é o software deste slot para saber o tempo de cooldown
-    mapeamento_slots = {1: "Trojan", 2: "Servidor", 3: "Fórum da Dark Web"}
-    if slot_id not in mapeamento_slots:
-        return jsonify({"status": "erro", "mensagem": "Slot inválido."}), 400
-        
-    tipo_software = mapeamento_slots[slot_id]
-    tempo_de_espera = CONFIG_SOFTWARE[tipo_software]["tempo_venda"]
-    
+    # Obter o utilizador que está com sessão iniciada
+    username = current_user.username 
     db = current_app.config["db"]
-    agora = int(time.time())
-    fim_cooldown = agora + tempo_de_espera
-    
+
+    # 1. Verificar na BD que estrutura está instalada neste slot
+    nome_estrutura = db.get_slot_estrutura(username, slot_id)
+
+    if not nome_estrutura or nome_estrutura == "Livre":
+        return jsonify({"status": "erro", "mensagem": "Não tens nenhuma estrutura instalada neste slot."})
+
+    # 2. Catálogo de Preços Originais (A lógica segura fica no backend)
+    catalogo_precos = {
+        "Trojan": {"dados": 50, "crypto": 0},
+        "Servidor": {"dados": 150, "crypto": 50},
+        "Fórum da Dark Web": {"dados": 500, "crypto": 200}
+    }
+
+    if nome_estrutura not in catalogo_precos:
+        return jsonify({"status": "erro", "mensagem": "Erro: Estrutura não reconhecida pelo sistema."})
+
+    preco_original = catalogo_precos[nome_estrutura]
+
+    # 3. Calcular a devolução de 40% (Math.floor arredonda para baixo)
+    reembolso_dados = math.floor(preco_original["dados"] * 0.40)
+    reembolso_crypto = math.floor(preco_original["crypto"] * 0.40)
+
+    # 4. Executar as alterações na Base de Dados
     try:
-        with dbapi2.connect(db.dbfile) as connection:
-            cursor = connection.cursor()
-            
-            # Muda o estado para CooldownVenda
-            cursor.execute(
-                "UPDATE SERVIDORES SET STATUS = 'CooldownVenda', FIM_TAREFA = ? WHERE USERNAME = ? AND SLOT_ID = ?",
-                (fim_cooldown, current_user.username, slot_id)
-            )
-            if cursor.rowcount == 0:
-                return jsonify({"status": "erro", "mensagem": "Nenhuma estrutura para vender neste slot."}), 400
-                
-            connection.commit()
-            
-        return jsonify({"status": "sucesso", "mensagem": f"{tipo_software} vendido! O slot entra em manutenção."})
+        db.processar_venda(username, slot_id, reembolso_dados, reembolso_crypto)
+        
+        # Devolver SUCESSO ao frontend, que vai fazer a página recarregar automaticamente!
+        return jsonify({
+            "status": "sucesso", 
+            "mensagem": f"Hardware Desmantelado! Recuperaste {reembolso_dados} TB e {reembolso_crypto} B."
+        })
     except Exception as e:
-        print(f"Erro ao vender: {e}")
-        return jsonify({"status": "erro", "mensagem": "Erro interno."}), 500
+        print("Erro crítico ao vender estrutura:", e)
+        return jsonify({"status": "erro", "mensagem": "Ocorreu um erro no servidor ao tentar vender."})
 
 @login_required
 def salvar_progresso():

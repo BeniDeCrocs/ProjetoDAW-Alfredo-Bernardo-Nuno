@@ -119,3 +119,39 @@ class Database:
             query = "UPDATE SERVIDORES SET STATUS = ?, FIM_TAREFA = ? WHERE USERNAME = ? AND SLOT_ID = ?"
             cursor.execute(query, (status, fim_tarefa, username, slot_id))
             connection.commit()
+
+    #FUNCOES PARA RESOLVER A VENDA DOS TROJANS ETC
+    def get_slot_estrutura(self, username, slot_id):
+        # Abre a ligação à BD como ensinado no Lab 07
+        with dbapi2.connect(self.dbfile) as connection:
+            cursor = connection.cursor()
+            # Ajusta o nome da tabela (ex: SLOTS) e das colunas conforme a tua BD
+            query = "SELECT ESTRUTURA FROM SLOTS WHERE USERNAME = ? AND SLOT_ID = ?"
+            cursor.execute(query, (username, slot_id))
+            row = cursor.fetchone()
+            if row:
+                return row[0] # Retorna o nome, ex: "Trojan" ou "Servidor"
+            return None
+
+    def processar_venda(self, username, slot_id, reembolso_dados, reembolso_crypto):
+        with dbapi2.connect(self.dbfile) as connection:
+            cursor = connection.cursor()
+            
+            # 1. Somar o reembolso ao saldo atual na tabela USER
+            query_update_user = """
+                UPDATE USER 
+                SET DADOS = DADOS + ?, CRYPTO = CRYPTO + ? 
+                WHERE USERNAME = ?
+            """
+            cursor.execute(query_update_user, (reembolso_dados, reembolso_crypto, username))
+            
+            # 2. Resetar o Slot para o estado "Livre"
+            query_update_slot = """
+                UPDATE SLOTS 
+                SET STATUS = 'Livre', ESTRUTURA = 'Livre' 
+                WHERE USERNAME = ? AND SLOT_ID = ?
+            """
+            cursor.execute(query_update_slot, (username, slot_id))
+            
+            # Guardar as alterações
+            connection.commit()
