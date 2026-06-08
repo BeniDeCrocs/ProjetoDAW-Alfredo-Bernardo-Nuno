@@ -68,16 +68,16 @@ class Database:
     def create_server_table(self):
         with dbapi2.connect(self.dbfile) as connection:
             cursor = connection.cursor()
-            # Cria a tabela de servidores associada aos utilizadores
+            # Adicionada a coluna NIVEL com valor por defeito 1
             cursor.execute("""
             CREATE TABLE IF NOT EXISTS SERVIDORES (
                 ID INTEGER PRIMARY KEY AUTOINCREMENT,
                 USERNAME TEXT NOT NULL,
                 SLOT_ID INTEGER NOT NULL,
                 TIPO_SERVIDOR TEXT NOT NULL,
-                STATUS TEXT DEFAULT 'Parado',
-                FIM_TAREFA TIMESTAMP,
-                FOREIGN KEY(USERNAME) REFERENCES USER(USERNAME)
+                STATUS TEXT NOT NULL,
+                FIM_TAREFA INTEGER NOT NULL,
+                NIVEL INTEGER DEFAULT 1 
             )
             """)
             connection.commit()

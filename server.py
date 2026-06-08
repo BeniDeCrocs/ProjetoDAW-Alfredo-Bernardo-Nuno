@@ -5,7 +5,6 @@ from flask_login import LoginManager
 from user import get_user  
 from models.database import Database  
 
-# Configuração do Gestor
 lm = LoginManager()
 
 @lm.user_loader
@@ -26,10 +25,11 @@ def create_app():
     app.add_url_rule("/recuperar", view_func=views.recover_page, methods=["GET", "POST"])
     app.add_url_rule("/logout", view_func=views.logout_page)
     
-    # Rotas do Jogo (Ações e Upgrades - APENAS AS QUE USAMOS AGORA!)
+    # Rotas do Jogo (APENAS UMA VEZ CADA!)
     app.add_url_rule("/salvar-progresso", view_func=views.salvar_progresso, methods=["POST"])
     app.add_url_rule("/comprar-estrutura", view_func=views.comprar_estrutura, methods=["POST"])
     app.add_url_rule("/vender-estrutura", view_func=views.vender_estrutura, methods=["POST"])
+    app.add_url_rule("/evoluir-estrutura", view_func=views.evoluir_estrutura, methods=["POST"])
 
     # INICIALIZAÇÃO DA BASE DE DADOS
     models_dir = os.path.dirname(os.path.abspath(__file__)) + "/models"
@@ -40,7 +40,6 @@ def create_app():
     
     return app
 
-# EXECUÇÃO DO SERVIDOR
 if __name__ == "__main__":
     app = create_app()
     port = app.config.get("PORT", 8080)
