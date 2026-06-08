@@ -17,7 +17,6 @@ html, body {
 }
 
 .login-container {
-    background-image: url('../images/pagina_jogo.gif');
     background-size: cover;
     background-position: center;
     width: 100vw;
@@ -26,47 +25,47 @@ html, body {
     overflow: hidden;
 }
 
+/* CLASSES DE FUNDO DINÂMICO */
+.bg-jogo {
+    background-image: url('../images/pagina_jogo.gif');
+}
+
+.bg-auth {
+    background-image: url('../images/pagina_login.jpg');
+}
+
 /* O elemento que sobrepõe a porta e pisca */
 .efeito-luz-pisca {
     position: absolute;
-    top: 30%; /* Ajusta estes valores para cobrir exatamente a porta */
+    top: 30%;
     left: 45%; 
-    width: 10%; /* Tamanho aproximado da abertura da porta */
+    width: 10%;
     height: 40%;
-    
-    /* Cria um degradê radial que imita as cores da porta (azul e rosa) */
     background: radial-gradient(circle, rgba(100, 200, 255, 0.8) 0%, rgba(200, 100, 255, 0.6) 60%, rgba(0,0,0,0) 100%);
-    filter: blur(20px); /* Suaviza as bordas para um efeito de brilho mais realista */
-    
-    /* Aplica a animação que definimos abaixo */
+    filter: blur(20px); 
     animation: piscarLuz 2s infinite linear;
-    z-index: 1; /* Garante que fica atrás do formulário de texto */
+    z-index: 1; 
 }
 
 /* Define os campos de texto à frente de tudo */
 .login-box {
-    background-color: transparent; /* Fundo cinza escuro */
+    background-color: transparent; 
     padding: 40px;
     border-radius: 6px;
     width: 320px;
-    
-    /* Mantém a caixa no centro do ecrã */
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 2;
-    
-    /* Empilha tudo em coluna */
     display: flex;
     flex-direction: column;
-    gap: 15px; /* Espaço entre cada input/botão */
-    
+    gap: 15px; 
     font-family: Arial, sans-serif;
-    color: white; /* Cor do texto "Remember me" */
+    color: white; 
 }
 
-/* Estilo das caixas de texto */
+/* Estilo das caixas de texto (Texto branco, Dica cinzenta) */
 .login-box input[type="text"],
 .login-box input[type="password"] {
     width: 100%;
@@ -74,9 +73,10 @@ html, body {
     border: none;
     border-radius: 4px;
     background-color: rgba(255, 255, 255, 0.1);
-    box-sizing: border-box; /* Impede que o padding estrague a largura */
+    box-sizing: border-box; 
     box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.6);
     font-size: 14px;
+    color: white;
 }
 
 .login-box input[type="text"]:focus,
@@ -85,13 +85,13 @@ html, body {
 }
 
 .login-box input::placeholder {
-    color: black; /* Cor do texto "Utilizador" e "Password" */
+    color: #cccccc; 
 }
 
-/* O treuque para o Checkbox e o Link ficarem opostos */
+/* O truque para o Checkbox e o Link ficarem opostos */
 .opcoes-checkbox-link {
     display: flex;
-    justify-content: space-between; /* Empurra um para a esquerda e outro para a direita */
+    justify-content: space-between; 
     font-size: 13px;
     align-items: center;
 }
@@ -108,11 +108,11 @@ html, body {
 
 .opcoes-checkbox-link input[type="checkbox"] {
     appearance: none;
-    -webkit-appearance: none; /* Para funcionar no Chrome/Safari */
+    -webkit-appearance: none; 
     width: 16px;
     height: 16px;
-    background-color: rgba(255, 255, 255, 0.1); /* Fundo meio transparente */
-    border: 1px solid #4a545e; /* Borda cinzenta */
+    background-color: rgba(255, 255, 255, 0.1); 
+    border: 1px solid #4a545e; 
     border-radius: 3px;
     cursor: pointer;
     position: relative;
@@ -120,13 +120,11 @@ html, body {
     vertical-align: middle;
 }
 
-/* O que acontece QUANDO CLICAS (:checked) */
 .opcoes-checkbox-link input[type="checkbox"]:checked {
     background-color: rgba(255, 255, 255, 0.1); 
     border-color: #4a545e;
 }
 
-/* Desenhar o "Visto" branco à mão usando CSS */
 .opcoes-checkbox-link input[type="checkbox"]:checked::after {
     content: '';
     position: absolute;
@@ -139,27 +137,6 @@ html, body {
     transform: rotate(45deg);
 }
 
-/* Botão de Login principal */
-.btn-login {
-    background-color: black; /* Azul estilo Steam */
-    color: white;
-    border: none;
-    padding: 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
-    margin-top: 10px;
-    box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.6);
-    transition: all 0.4s ease;
-}
-
-.btn-login:hover {
-    background-color: greenyellow;
-    color: black;
-}
-
-/* A linha que separa os botões */
 .linha-divisoria {
     width: 100%;
     border: 0;
@@ -167,34 +144,14 @@ html, body {
     margin: 10px 0;
 }
 
-/* Botão de Registar (Transparente com borda) */
-.btn-registar {
-    background-color: black;
-    color: white;
-    border: none;
-    padding: 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
-    box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.6);
-    transition: all 0.4s ease;
-}
-
-.btn-registar:hover {
-    background-color: greenyellow;
-    color: black;
-}
-
-/* A definição da animação em si: faz falhar a opacidade */
 @keyframes piscarLuz {
-    0%   { opacity: 0.1; }  /* Luz quase apagada */
-    5%   { opacity: 0.8; }  /* Pico de brilho rápido */
-    10%  { opacity: 0.2; }  /* Apaga logo a seguir */
-    15%  { opacity: 0.7; }  /* Outro pico */
-    20%  { opacity: 0.1; }  /* Apaga */
-    60%  { opacity: 0.2; }  /* Mantém-se dimm por um tempo (pausa) */
-    65%  { opacity: 0.9; }  /* Brilho máximo */
-    70%  { opacity: 0.3; }  /* Apaga */
-    100% { opacity: 0.1; }  /* Reinicia o ciclo apagada */
+    0%   { opacity: 0.1; }  
+    5%   { opacity: 0.8; }  
+    10%  { opacity: 0.2; }  
+    15%  { opacity: 0.7; }  
+    20%  { opacity: 0.1; }  
+    60%  { opacity: 0.2; }  
+    65%  { opacity: 0.9; }  
+    70%  { opacity: 0.3; }  
+    100% { opacity: 0.1; }  
 }

@@ -279,8 +279,3 @@ def recover_page():
     sucesso = db.update_password(username, new_hashed_pw)
     if sucesso: return redirect(url_for("login_page"))
     else: return render_template("recuperar.html", error="Erro ao atualizar password. Tenta novamente.", form=request.form)
-
-# Funções não utilizadas retiradas para limpar o ficheiro
-def construir(): pass
-def iniciar_tarefa(): pass
-def receber_recompensa(): pass

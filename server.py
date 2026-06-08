@@ -26,11 +26,8 @@ def create_app():
     app.add_url_rule("/recuperar", view_func=views.recover_page, methods=["GET", "POST"])
     app.add_url_rule("/logout", view_func=views.logout_page)
     
-    # Rotas do Jogo (Ações e Upgrades)
+    # Rotas do Jogo (Ações e Upgrades - APENAS AS QUE USAMOS AGORA!)
     app.add_url_rule("/salvar-progresso", view_func=views.salvar_progresso, methods=["POST"])
-    app.add_url_rule("/construir", view_func=views.construir, methods=["POST"])
-    app.add_url_rule("/iniciar-tarefa", view_func=views.iniciar_tarefa, methods=["POST"])
-    app.add_url_rule("/receber-recompensa", view_func=views.receber_recompensa, methods=["POST"])
     app.add_url_rule("/comprar-estrutura", view_func=views.comprar_estrutura, methods=["POST"])
     app.add_url_rule("/vender-estrutura", view_func=views.vender_estrutura, methods=["POST"])
 

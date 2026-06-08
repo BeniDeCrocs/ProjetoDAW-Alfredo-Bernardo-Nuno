@@ -1,78 +1,43 @@
-{% extends "layout.html" %}
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperar Acesso - Cyber Breach</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
+</head>
+<body>
+    <div class="login-container bg-auth">
+        <div class="efeito-luz-pisca"></div>
+        <div class="login-box" style="width: 450px; text-align: center; padding-bottom: 20px;">
+            
+            <div class="header-container">
+                <img src="/static/images/titulo_cyberbreach.png" alt="Logo">
+            </div>
 
-{% block title %}
-<h1 class="title">Recuperar Palavra-passe</h1>
-{% endblock %}
+            <div style="background-color: rgba(0, 0, 0, 0.75); padding: 30px; border-radius: 6px; border: 1px solid #222; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
+                <h2 style="color: #ff4d4d; margin-bottom: 20px;">Recuperar Acesso</h2>
+                <p style="font-size: 13px; color: #aaa; margin-bottom: 20px;">
+                    Insere o teu username e uma nova palavra-passe.
+                </p>
 
-{% block content %}
-<div class="recover-container">
-    <p class="subtitle">Insere o teu username e uma nova palavra-passe.</p>
-    
-    <form method="post" action="{{ url_for('recover_page') }}">
-        <div class="field">
-            <label class="label">Username</label>
-            <div class="control">
-                <input class="input" type="text" name="username" 
-                       placeholder="O teu username" 
-                       value="{{ form.username if form else '' }}" required>
+                <form method="POST" style="display: flex; flex-direction: column; gap: 15px;">
+                    <input type="text" name="username" placeholder="Username" required style="width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid #444; color: white; border-radius: 4px;">
+                    <input type="password" name="new_password" placeholder="Nova Password" required style="width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid #444; color: white; border-radius: 4px;">
+                    <input type="password" name="confirm_password" placeholder="Confirmar Password" required style="width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid #444; color: white; border-radius: 4px;">
+
+                    <button type="submit" style="width: 100%; background-color: #000000; color: #ff4d4d; padding: 12px; font-weight: bold; border-radius: 4px; border: 1px solid #111; cursor: pointer; transition: 0.3s; margin-top: 10px;" onmouseover="this.style.backgroundColor='#111'; this.style.borderColor='#ff4d4d'" onmouseout="this.style.backgroundColor='#000000'; this.style.borderColor='#111'">Redefinir Password</button>
+                </form>
+
+                <p style="margin-top: 20px;">
+                    <a href="{{ url_for('login_page') }}" style="color: #aaa; font-size: 12px; text-decoration: none;">Voltar ao Login</a>
+                </p>
+
+                {% if error %}
+                    <p style="color: #ff4d4d; margin-top: 15px; font-size: 12px;">{{ error }}</p>
+                {% endif %}
             </div>
         </div>
-
-        <div class="field">
-            <label class="label">Nova Palavra-passe</label>
-            <div class="control">
-                <input class="input" type="password" name="new_password" 
-                       placeholder="Nova palavra-passe" required>
-            </div>
-        </div>
-
-        <div class="field">
-            <label class="label">Confirmar Nova Palavra-passe</label>
-            <div class="control">
-                <input class="input" type="password" name="confirm_password" 
-                       placeholder="Confirmar nova palavra-passe" required>
-            </div>
-        </div>
-
-        {% if error %}
-        <div class="notification is-danger">
-            {{ error }}
-        </div>
-        {% endif %}
-
-        <div class="field is-grouped">
-            <div class="control">
-                <button class="button is-primary" type="submit">Recuperar</button>
-            </div>
-            <div class="control">
-                <a class="button is-light" href="{{ url_for('login_page') }}">
-                    Voltar ao Login
-                </a>
-            </div>
-        </div>
-    </form>
-</div>
-
-<style>
-.recover-container {
-    max-width: 500px;
-    margin: 50px auto;
-    padding: 20px;
-    background: #f9f9f9;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-.subtitle {
-    text-align: center;
-    margin-bottom: 30px;
-    color: #555;
-}
-.notification.is-danger {
-    background-color: #e74c3c;
-    color: white;
-    padding: 10px;
-    border-radius: 5px;
-    margin-bottom: 15px;
-}
-</style>
-{% endblock %}
+    </div>
+</body>
+</html>

@@ -3,40 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>REGISTO - Cyber Breach</title>
+    <title>Registar - Cyber Breach</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
 </head>
 <body>
-    <div class="login-container">
+    <div class="login-container bg-auth">
         <div class="efeito-luz-pisca"></div>
-        
-        <form method="post" action="{{ url_for('register_page') }}" class="login-box">
-            <h2 style="text-align: center; margin-top: 0;">Novo Hacker</h2>
-            
-            <input type="text" name="username" placeholder="Novo Utilizador" required>
-            
-            <div style="position: relative; width: 100%;">
-                <input type="password" name="password" id="password-input" placeholder="Nova Password" required>
-                <span id="toggle-password" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; display: flex;">
-                    <img src="/static/images/hacker_password.png" alt="Mostrar Password" width="24">
-                </span>
+        <div class="login-box" style="width: 450px; text-align: center; padding-bottom: 20px;">
+            <div class="header-container">
+                <img src="/static/images/titulo_cyberbreach.png" alt="Logo">
             </div>
-
-            {% if form and form.errors %}
-                <div style="color: #ff4444; font-size: 13px; text-align: center; margin-top: 5px;">
-                    {% if form.errors.username %}<p>{{ form.errors.username }}</p>{% endif %}
-                    {% if form.errors.password %}<p>{{ form.errors.password }}</p>{% endif %}
-                </div>
-            {% endif %}
-
-            <button type="submit" class="btn-registar" style="margin-top: 15px;">Criar Conta</button>
             
-            <hr class="linha-divisoria">
-            
-            <button type="button" class="btn-login" onclick="window.location.href='/login'">Voltar ao Login</button>
-        </form>
+            <div style="background-color: rgba(0, 0, 0, 0.75); padding: 30px; border-radius: 6px; border: 1px solid #222; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
+                <h2 style="color: #db08a7; margin-bottom: 20px;">Novo Registo</h2>
+                
+                <form method="POST" style="display: flex; flex-direction: column; gap: 15px;">
+                    <input type="text" name="username" placeholder="Novo Username" required style="width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid #444; color: white; border-radius: 4px;">
+                    <input type="password" name="password" placeholder="Nova Password" required style="width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid #444; color: white; border-radius: 4px;">
+                    
+                    <button type="submit" style="width: 100%; background-color: #000000; color: #db08a7; padding: 12px; font-weight: bold; border-radius: 4px; border: 1px solid #111; cursor: pointer; transition: 0.3s; margin-top: 10px;" onmouseover="this.style.backgroundColor='#111'; this.style.borderColor='#db08a7'" onmouseout="this.style.backgroundColor='#000000'; this.style.borderColor='#111'">Criar Conta</button>
+                </form>
+
+                <p style="margin-top: 20px; font-size: 13px; color: #aaa;">
+                    Já tens identificação? <a href="{{ url_for('login_page') }}" style="color: #db08a7; text-decoration: none; font-weight: bold;">Voltar ao Login</a>
+                </p>
+
+                {% if form and form.errors %}
+                    {% for field, error in form.errors.items() %}
+                        <p style="color: #ff4d4d; margin-top: 15px; font-size: 12px;">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
     </div>
-
-    <script src="{{ url_for('static', filename='scripts/code.js') }}" defer></script>
 </body>
 </html>
