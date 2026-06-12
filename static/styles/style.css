@@ -34,6 +34,51 @@ html, body {
     background-image: url('../images/pagina_login.jpg');
 }
 
+/* Remove o ícone nativo do browser nos campos password */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear,
+input[type="password"]::-webkit-credentials-auto-fill-button {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* CARDS DOS SLOTS */
+.slot-card {
+    flex: 1;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 4px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 120px;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+    transition: all 0.3s ease;
+}
+
+/* Cores das bordas por status */
+.slot-card.status-ativo {
+    border: 1px solid #00ffcc;
+}
+
+.slot-card.status-livre {
+    border: 1px solid #4a545e;
+}
+
+.slot-card.status-construcao {
+    border: 1px solid #ffc107;
+}
+
+.slot-card.status-cooldown {
+    border: 1px solid #db08a7;
+}
+
+.slot-card.status-default {
+    border: 1px solid #ff4d4d;
+}
+
 /* O elemento que sobrepõe a porta e pisca */
 .efeito-luz-pisca {
     position: absolute;
@@ -52,7 +97,6 @@ html, body {
     background-color: transparent; 
     padding: 40px;
     border-radius: 6px;
-    width: 320px;
     position: absolute;
     top: 50%;
     left: 50%;
@@ -65,7 +109,7 @@ html, body {
     color: white; 
 }
 
-/* Estilo das caixas de texto (Texto branco, Dica cinzenta) */
+/* Estilo das caixas de texto */
 .login-box input[type="text"],
 .login-box input[type="password"] {
     width: 100%;

@@ -80,6 +80,16 @@ def home_page():
                     slots[slot_id]["producao_c"] = config["geracao_crypto"] * multiplicador
                     total_geracao_dados += config["geracao_dados"] * multiplicador
                     total_geracao_crypto += config["geracao_crypto"] * multiplicador
+
+            cursor.execute(
+                """
+                SELECT USERNAME, CRYPTO 
+                FROM USER 
+                ORDER BY CRYPTO DESC, DADOS DESC 
+                LIMIT 5
+                """
+            )
+            leaderboard = cursor.fetchall()
                     
     except Exception as e:
         print(f"Erro ao carregar slots: {e}")
@@ -89,8 +99,50 @@ def home_page():
         slots=slots,
         total_fps_dados=total_geracao_dados,
         total_fps_crypto=total_geracao_crypto,
-        config=CONFIG_SOFTWARE
+        config=CONFIG_SOFTWARE,
+        leaderboard=leaderboard
     )
+
+@login_required
+def get_leaderboard():
+    """Retorna o TOP 5 hackers ordenado por tipo especificado"""
+    tipo = request.args.get('tipo', 'crypto')  # 'crypto' ou 'dados'
+    db = current_app.config["db"]
+    
+    try:
+        with dbapi2.connect(db.dbfile) as connection:
+            connection.row_factory = dbapi2.Row
+            cursor = connection.cursor()
+            
+            if tipo == 'crypto':
+                cursor.execute("""
+                    SELECT USERNAME, CRYPTO, DADOS 
+                    FROM USER 
+                    ORDER BY CRYPTO DESC, DADOS DESC 
+                    LIMIT 5
+                """)
+            else:
+                cursor.execute("""
+                    SELECT USERNAME, CRYPTO, DADOS 
+                    FROM USER 
+                    ORDER BY DADOS DESC, CRYPTO DESC 
+                    LIMIT 5
+                """)
+            
+            leaderboard = cursor.fetchall()
+            
+            resultado = []
+            for row in leaderboard:
+                resultado.append({
+                    "username": row["USERNAME"],
+                    "crypto": row["CRYPTO"],
+                    "dados": row["DADOS"]
+                })
+            
+            return jsonify({"status": "sucesso", "leaderboard": resultado})
+    except Exception as e:
+        print(f"Erro ao buscar leaderboard: {e}")
+        return jsonify({"status": "erro", "mensagem": str(e)}), 500
 
 @login_required
 def comprar_estrutura():

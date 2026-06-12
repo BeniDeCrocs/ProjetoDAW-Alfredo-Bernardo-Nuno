@@ -30,6 +30,7 @@ def create_app():
     app.add_url_rule("/comprar-estrutura", view_func=views.comprar_estrutura, methods=["POST"])
     app.add_url_rule("/vender-estrutura", view_func=views.vender_estrutura, methods=["POST"])
     app.add_url_rule("/evoluir-estrutura", view_func=views.evoluir_estrutura, methods=["POST"])
+    app.add_url_rule("/get-leaderboard", view_func=views.get_leaderboard, methods=["GET"])
 
     # INICIALIZAÇÃO DA BASE DE DADOS
     models_dir = os.path.dirname(os.path.abspath(__file__)) + "/models"

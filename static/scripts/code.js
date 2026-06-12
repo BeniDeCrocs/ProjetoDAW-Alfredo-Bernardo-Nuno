@@ -258,5 +258,113 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
             });
         }
+
+        // ==========================================
+        // LEADERBOARD COM ABA SELETORA
+        // ==========================================
+        let leaderboardTipoAtual = 'crypto';
+
+        function carregarLeaderboard() {
+            const container = document.getElementById('leaderboard-container');
+            if (!container) return;
+            
+            container.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;"><span>⏳ A carregar...</span></div>';
+            
+            fetch(`/get-leaderboard?tipo=${leaderboardTipoAtual}`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'sucesso' && data.leaderboard) {
+                    if (data.leaderboard.length === 0) {
+                        container.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">Sem dados para ranking.</div>';
+                        return;
+                    }
+                    
+                    let html = '';
+                    data.leaderboard.forEach((jogador, index) => {
+                        let medalha = '';
+                        if (index === 0) medalha = '🥇';
+                        else if (index === 1) medalha = '🥈';
+                        else if (index === 2) medalha = '🥉';
+                        else medalha = `${index + 1}º`;
+                        
+                        // Destacar o próprio jogador
+                        const isCurrentUser = (jogador.username === window.USERNAME);
+                        const rowStyle = isCurrentUser ? 'background-color: rgba(0, 255, 204, 0.15); border-left: 3px solid #00ffcc;' : '';
+                        const nameStyle = isCurrentUser ? 'color: #00ffcc; font-weight: bold;' : 'color: #ffffff;';
+                        
+                        // Formatar números
+                        let cryptoDisplay = jogador.crypto;
+                        let dadosDisplay = jogador.dados;
+                        if (cryptoDisplay >= 1000000) cryptoDisplay = (cryptoDisplay / 1000000).toFixed(1) + 'M';
+                        else if (cryptoDisplay >= 1000) cryptoDisplay = (cryptoDisplay / 1000).toFixed(1) + 'K';
+                        
+                        if (dadosDisplay >= 1000000) dadosDisplay = (dadosDisplay / 1000000).toFixed(1) + 'M';
+                        else if (dadosDisplay >= 1000) dadosDisplay = (dadosDisplay / 1000).toFixed(1) + 'K';
+                        
+                        html += `
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 5px; border-bottom: 1px solid #333; ${rowStyle}">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span style="color: #ffc107; font-weight: bold; width: 35px; font-size: 14px;">${medalha}</span>
+                                    <span style="${nameStyle} font-size: 13px;">${escapeHtml(jogador.username)}</span>
+                                </div>
+                                <div style="display: flex; gap: 12px;">
+                                    <span style="color: gold; font-size: 11px;">
+                                        <img src="/static/images/bitcoin_currency2.png" style="width: 12px; height: 12px; vertical-align: middle;"> ${cryptoDisplay}
+                                    </span>
+                                    <span style="color: #00ffcc; font-size: 11px;">
+                                        <img src="/static/images/dados_currency.png" style="width: 12px; height: 12px; vertical-align: middle;"> ${dadosDisplay} TB
+                                    </span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = '<div style="text-align: center; padding: 20px; color: #ff4d4d;">Erro ao carregar ranking.</div>';
+                }
+            })
+            .catch(error => {
+                console.error("Erro ao buscar leaderboard:", error);
+                container.innerHTML = '<div style="text-align: center; padding: 20px; color: #ff4d4d;">Erro ao carregar ranking.</div>';
+            });
+        }
+
+        // Função auxiliar para escapar HTML
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Configurar botões do leaderboard
+        const btnCrypto = document.getElementById('leaderboard-crypto-btn');
+        const btnDados = document.getElementById('leaderboard-dados-btn');
+
+        if (btnCrypto && btnDados) {
+            btnCrypto.addEventListener('click', function() {
+                leaderboardTipoAtual = 'crypto';
+                btnCrypto.style.backgroundColor = '#1a1a2e';
+                btnDados.style.backgroundColor = '#000000';
+                carregarLeaderboard();
+            });
+            
+            btnDados.addEventListener('click', function() {
+                leaderboardTipoAtual = 'dados';
+                btnDados.style.backgroundColor = '#1a1a2e';
+                btnCrypto.style.backgroundColor = '#000000';
+                carregarLeaderboard();
+            });
+            
+            // Carregar leaderboard inicial
+            carregarLeaderboard();
+            
+            // Atualizar a cada 15 segundos
+            setInterval(carregarLeaderboard, 15000);
+        }
     }
 });
