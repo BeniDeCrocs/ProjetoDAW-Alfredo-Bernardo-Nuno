@@ -1,8 +1,7 @@
+// Esperar que o DOM esteja carregado
 document.addEventListener('DOMContentLoaded', function () {
 
-    // ==========================================
-    // 1. LÓGICA DO OLHO DA PASSWORD
-    // ==========================================
+    // LÓGICA DO OLHO DA PASSWORD
     const passwordInput = document.getElementById('password-input');
     const togglePassword = document.getElementById('toggle-password');
 
@@ -18,9 +17,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // ==========================================
-    // 2. LÓGICA DO JOGO E UPGRADES
-    // ==========================================
+    // LÓGICA DO JOGO E UPGRADES
     const valCryptoElement = document.getElementById('val-crypto');
     const valDadosElement = document.getElementById('val-dados');
 
@@ -31,28 +28,39 @@ document.addEventListener('DOMContentLoaded', function () {
         let fpsDados = parseInt(window.FPS_DADOS || 1, 10);
         let fpsCrypto = parseInt(window.FPS_CRYPTO || 0, 10);
 
+        // =================================================================
+        // O CADEADO DE SEGURANÇA (Evita que o auto-save apague compras/vendas)
+        // =================================================================
+        let isProcessingTransaction = false;
+
         function atualizarEcra() {
             valCryptoElement.textContent = crypto;
             valDadosElement.textContent = dados;
         }
 
         document.getElementById('btn-farm-crypto').addEventListener('click', function() {
+            if(isProcessingTransaction) return;
             crypto += 1;
             atualizarEcra();
         });
 
         document.getElementById('btn-farm-dados').addEventListener('click', function() {
+            if(isProcessingTransaction) return;
             dados += 1;
             atualizarEcra();
         });
 
         setInterval(function() {
+            if(isProcessingTransaction) return;
             dados += fpsDados; 
             crypto += fpsCrypto;
             atualizarEcra();
         }, 1000);
 
         function guardarProgresso() {
+            // Se estivermos a comprar/vender, NÃO FAZ SAVE (Evita o Bug do dinheiro sumir)
+            if (isProcessingTransaction) return Promise.resolve({status: "ignorado"});
+            
             return fetch('/salvar-progresso', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -67,33 +75,41 @@ document.addEventListener('DOMContentLoaded', function () {
         // ==========================================
         // 3. FUNÇÕES DE COMPRAR, VENDER E EVOLUIR
         // ==========================================
-        
         window.comprarEstrutura = function(slotId) {
-            fetch("/comprar-estrutura", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ slot_id: parseInt(slotId) })
+            if (isProcessingTransaction) return;
+            isProcessingTransaction = true; // Tranca o jogo
+
+            guardarProgresso().then(() => {
+                return fetch("/comprar-estrutura", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ slot_id: parseInt(slotId) })
+                });
             })
             .then(response => response.json())
             .then(data => {
                 if (data.status === "sucesso") {
                     window.location.reload();
                 } else {
+                    isProcessingTransaction = false; // Destranca em caso de erro
                     alert("⚠️ " + data.mensagem);
                 }
             })
-            .catch(error => console.error("Erro:", error));
+            .catch(error => { isProcessingTransaction = false; console.error("Erro:", error); });
         };
 
         window.venderEstrutura = function(slotId) {
-            if (!confirm("Tens a certeza que queres vender esta estrutura por 40% do valor investido?")) {
-                return;
-            }
+            if (isProcessingTransaction) return;
+            if (!confirm("Tens a certeza que queres vender esta estrutura por 40% do valor investido?")) return;
             
-            fetch("/vender-estrutura", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ slot_id: parseInt(slotId) })
+            isProcessingTransaction = true; // Tranca o jogo
+
+            guardarProgresso().then(() => {
+                return fetch("/vender-estrutura", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ slot_id: parseInt(slotId) })
+                });
             })
             .then(response => response.json())
             .then(data => {
@@ -101,22 +117,24 @@ document.addEventListener('DOMContentLoaded', function () {
                     alert(data.mensagem);
                     window.location.reload();
                 } else {
+                    isProcessingTransaction = false; // Destranca
                     alert("Erro: " + data.mensagem);
                 }
             })
-            .catch(error => {
-                console.error("Erro na requisição:", error);
-                alert("Erro ao comunicar com o servidor.");
-            });
+            .catch(error => { isProcessingTransaction = false; alert("Erro ao comunicar."); });
         };
 
         window.evoluirEstrutura = function(slotId) {
-            fetch('/evoluir-estrutura', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ slot_id: parseInt(slotId) })
+            if (isProcessingTransaction) return;
+            isProcessingTransaction = true; // Tranca o jogo
+
+            // ADICIONADO: Faltava aqui o guardarProgresso antes de evoluir!
+            guardarProgresso().then(() => {
+                return fetch('/evoluir-estrutura', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ slot_id: parseInt(slotId) })
+                });
             })
             .then(response => response.json())
             .then(data => {
@@ -124,13 +142,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     alert(data.mensagem);
                     window.location.reload();
                 } else {
+                    isProcessingTransaction = false; // Destranca
                     alert('❌ ' + data.mensagem);
                 }
             })
-            .catch(error => {
-                console.error("Erro na comunicação:", error);
-                alert("Erro ao comunicar com o servidor.");
-            });
+            .catch(error => { isProcessingTransaction = false; alert("Erro ao comunicar."); });
         };
 
         // ==========================================
@@ -143,7 +159,6 @@ document.addEventListener('DOMContentLoaded', function () {
             cards.forEach(card => {
                 const status = card.getAttribute("data-status");
                 const fim = parseInt(card.getAttribute("data-fim"), 10);
-                
                 const timerDisplay = card.querySelector(".timer-display");
 
                 if (!status || !fim || status === "Livre") return;

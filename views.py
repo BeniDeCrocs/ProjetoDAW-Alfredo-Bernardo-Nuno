@@ -27,7 +27,6 @@ CONFIG_SOFTWARE = {
     }
 }
 
-
 def home_page():
     if not current_user.is_authenticated:
         return render_template("index.html", slots={}, total_fps_dados=0, total_fps_crypto=0)
@@ -93,12 +92,10 @@ def home_page():
         config=CONFIG_SOFTWARE
     )
 
-
 @login_required
 def comprar_estrutura():
     dados_recebidos = request.get_json() or {}
     slot_id = int(dados_recebidos.get("slot_id", 0))
-    
     mapeamento_slots = {1: "Trojan", 2: "Servidor", 3: "Fórum da Dark Web"}
     
     if slot_id not in mapeamento_slots:
@@ -107,31 +104,31 @@ def comprar_estrutura():
     tipo_software = mapeamento_slots[slot_id]
     config = CONFIG_SOFTWARE[tipo_software]
     
-    if current_user.dados < config["custo_dados"] or current_user.crypto < config["custo_crypto"]:
-        return jsonify({"status": "erro", "mensagem": "Recursos insuficientes!"}), 400
-        
     db = current_app.config["db"]
     agora = int(time.time())
-    fim_construcao = agora + config["tempo_construcao"]
-    
-    novo_dados = current_user.dados - config["custo_dados"]
-    novo_crypto = current_user.crypto - config["custo_crypto"]
     
     try:
         with dbapi2.connect(db.dbfile) as connection:
             cursor = connection.cursor()
             
+            # 1. Puxa os dados atualizados fisicamente da Base de Dados!
+            cursor.execute("SELECT DADOS, CRYPTO FROM USER WHERE USERNAME = ?", (current_user.username,))
+            user_data = cursor.fetchone()
+            db_dados, db_crypto = user_data[0], user_data[1]
+            
+            if db_dados < config["custo_dados"] or db_crypto < config["custo_crypto"]:
+                return jsonify({"status": "erro", "mensagem": "Recursos insuficientes!"}), 400
+                
             cursor.execute("SELECT STATUS, FIM_TAREFA FROM SERVIDORES WHERE USERNAME = ? AND SLOT_ID = ?", (current_user.username, slot_id))
             resultado = cursor.fetchone()
             
             if resultado:
-                status_atual = resultado[0]
-                fim_tarefa = resultado[1] if resultado[1] else 0
-                
-                if status_atual == "CooldownVenda" and agora >= fim_tarefa:
-                    cursor.execute("DELETE FROM SERVIDORES WHERE USERNAME = ? AND SLOT_ID = ?", (current_user.username, slot_id))
-                else:
-                    return jsonify({"status": "erro", "mensagem": "Este slot está ocupado ou em manutenção!"}), 400
+                return jsonify({"status": "erro", "mensagem": "Este slot está ocupado ou em manutenção!"}), 400
+            
+            # Calcula custos e os novos tempos (Nível 1)
+            novo_dados = db_dados - config["custo_dados"]
+            novo_crypto = db_crypto - config["custo_crypto"]
+            fim_construcao = agora + config["tempo_construcao"] # Nível 1 demora o tempo base
             
             cursor.execute("UPDATE USER SET DADOS = ?, CRYPTO = ? WHERE USERNAME = ?", (novo_dados, novo_crypto, current_user.username))
             
@@ -144,20 +141,13 @@ def comprar_estrutura():
             current_user.dados = novo_dados
             current_user.crypto = novo_crypto
             
-        return jsonify({"status": "sucesso", "mensagem": f"A instalar {tipo_software}..."})
+        return jsonify({"status": "sucesso", "mensagem": f"A instalar {tipo_software} (Nível 1)..."})
     except Exception as e:
         print(f"Erro ao comprar: {e}")
         return jsonify({"status": "erro", "mensagem": "Erro interno."}), 500
 
-
 @login_required
 def evoluir_estrutura():
-    print("=== FUNÇÃO EVOLUIR ESTRUTURA CHAMADA ===")  # Debug
-    dados_pedido = request.get_json() or {}
-    print(f"Dados recebidos: {dados_pedido}")  # Debug
-    slot_id = int(dados_pedido.get("slot_id", 0))
-    print(f"Slot ID: {slot_id}")  # Debug
-
     dados_pedido = request.get_json() or {}
     slot_id = int(dados_pedido.get("slot_id", 0))
     
@@ -167,6 +157,11 @@ def evoluir_estrutura():
     try:
         with dbapi2.connect(db.dbfile) as connection:
             cursor = connection.cursor()
+            
+            # Puxa recursos reais do DB!
+            cursor.execute("SELECT DADOS, CRYPTO FROM USER WHERE USERNAME = ?", (current_user.username,))
+            user_data = cursor.fetchone()
+            db_dados, db_crypto = user_data[0], user_data[1]
             
             cursor.execute(
                 "SELECT TIPO_SERVIDOR, STATUS, NIVEL FROM SERVIDORES WHERE USERNAME = ? AND SLOT_ID = ?",
@@ -188,19 +183,19 @@ def evoluir_estrutura():
                 return jsonify({"status": "erro", "mensagem": "Esta estrutura já está no Nível Máximo (3)."}), 400
 
             config = CONFIG_SOFTWARE.get(tipo_software)
-            if not config:
-                return jsonify({"status": "erro", "mensagem": "Software não reconhecido."}), 400
-
             nivel_alvo = nivel_atual + 1
             custo_dados = config["custo_dados"] * nivel_alvo
             custo_crypto = config["custo_crypto"] * nivel_alvo
 
-            if current_user.dados < custo_dados or current_user.crypto < custo_crypto:
+            if db_dados < custo_dados or db_crypto < custo_crypto:
                 return jsonify({"status": "erro", "mensagem": f"Precisas de {custo_dados} DADOS e {custo_crypto} CRYPTO para o Nível {nivel_alvo}."}), 400
 
-            novo_dados = current_user.dados - custo_dados
-            novo_crypto = current_user.crypto - custo_crypto
-            fim_evolucao = agora + config["tempo_construcao"]
+            novo_dados = db_dados - custo_dados
+            novo_crypto = db_crypto - custo_crypto
+            
+            # O Tempo de Instalação AUMENTA de acordo com o Nível
+            tempo_evolucao = config["tempo_construcao"] * nivel_alvo
+            fim_evolucao = agora + tempo_evolucao
 
             cursor.execute("UPDATE USER SET DADOS = ?, CRYPTO = ? WHERE USERNAME = ?", (novo_dados, novo_crypto, current_user.username))
             
@@ -219,7 +214,6 @@ def evoluir_estrutura():
         print("Erro crítico ao evoluir:", e)
         return jsonify({"status": "erro", "mensagem": "Erro no servidor ao tentar evoluir."}), 500
 
-
 @login_required
 def vender_estrutura():
     dados_pedido = request.get_json() or {}
@@ -231,6 +225,11 @@ def vender_estrutura():
     try:
         with dbapi2.connect(db.dbfile) as connection:
             cursor = connection.cursor()
+
+            # Puxa recursos atualizados do DB
+            cursor.execute("SELECT DADOS, CRYPTO FROM USER WHERE USERNAME = ?", (current_user.username,))
+            user_data = cursor.fetchone()
+            db_dados, db_crypto = user_data[0], user_data[1]
 
             cursor.execute(
                 "SELECT TIPO_SERVIDOR, STATUS, NIVEL FROM SERVIDORES WHERE USERNAME = ? AND SLOT_ID = ?",
@@ -249,22 +248,21 @@ def vender_estrutura():
                 return jsonify({"status": "erro", "mensagem": "Apenas podes vender estruturas 'Ativas'."}), 400
 
             config = CONFIG_SOFTWARE.get(tipo_software)
-            if not config:
-                return jsonify({"status": "erro", "mensagem": "Software não reconhecido."}), 400
-
-            multiplicador_total = sum(range(1, nivel_atual + 1))
             
+            # Soma de todo o custo (Ex: Vender nivel 2 = custo base x 1 + custo base x 2)
+            multiplicador_total = sum(range(1, nivel_atual + 1))
             total_dados_gasto = config["custo_dados"] * multiplicador_total
             total_crypto_gasto = config["custo_crypto"] * multiplicador_total
 
             reembolso_dados = math.floor(total_dados_gasto * 0.40)
             reembolso_crypto = math.floor(total_crypto_gasto * 0.40)
 
-            tempo_espera = config.get("tempo_venda", 30)
+            # O Tempo do Cooldown AUMENTA consoante o nível do Software destruído
+            tempo_espera = config.get("tempo_venda", 30) * nivel_atual
             fim_cooldown = agora + tempo_espera
 
-            novo_dados = current_user.dados + reembolso_dados
-            novo_crypto = current_user.crypto + reembolso_crypto
+            novo_dados = db_dados + reembolso_dados
+            novo_crypto = db_crypto + reembolso_crypto
 
             cursor.execute(
                 "UPDATE USER SET DADOS = ?, CRYPTO = ? WHERE USERNAME = ?",
@@ -282,13 +280,12 @@ def vender_estrutura():
 
         return jsonify({
             "status": "sucesso",
-            "mensagem": f"Vendido (Nível {nivel_atual})! Recuperaste {reembolso_dados} TB e {reembolso_crypto} B."
+            "mensagem": f"Vendido (Nível {nivel_atual})! Recuperaste {reembolso_dados} TB e {reembolso_crypto} ₿."
         })
         
     except Exception as e:
         print("Erro crítico ao vender estrutura:", e)
         return jsonify({"status": "erro", "mensagem": "Erro no servidor ao tentar vender."}), 500
-
 
 @login_required
 def salvar_progresso():
@@ -307,7 +304,6 @@ def salvar_progresso():
         current_user.dados = novos_dados
         return jsonify({"status": "sucesso"})
     return jsonify({"status": "erro"}), 500
-
 
 # ==========================================================
 # Funções de Login / Registo / Recuperar
@@ -328,7 +324,6 @@ def validate_register_form(form):
         form.data["password"] = form_password
     return len(form.errors) == 0
 
-
 def register_page():
     if request.method == "GET": 
         return render_template("registar.html", form=None)
@@ -346,7 +341,6 @@ def register_page():
         request.form.errors["username"] = "Este utilizador já existe no Cyber Breach!"
         return render_template("registar.html", form=request.form)
 
-
 def validate_login_form(form):
     form.data = {}
     form.errors = {}
@@ -361,7 +355,6 @@ def validate_login_form(form):
     else: 
         form.data["password"] = form_password
     return len(form.errors) == 0
-
 
 def login_page():
     if request.method == "GET": 
@@ -379,11 +372,9 @@ def login_page():
             return redirect(url_for("home_page"))
     return render_template("login.html", form=request.form)
 
-
 def logout_page():
     logout_user()
     return redirect(url_for("home_page"))
-
 
 def validate_recover_form(form):
     form.data = {}
@@ -402,7 +393,6 @@ def validate_recover_form(form):
     if form_password != form_confirm: 
         form.errors["confirm_password"] = "As palavras-passe não coincidem."
     return len(form.errors) == 0
-
 
 def recover_page():
     if request.method == "GET": 
