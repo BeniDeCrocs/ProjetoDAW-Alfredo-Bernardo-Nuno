@@ -1,14 +1,16 @@
 # ProjetoDAW-Alfredo-Bernardo-Nuno
 
-1. Introdução e Visão Geral
+1. INTRODUÇÃO E VISÃO GERAL
+
 O Cyber Breach é um jogo incremental estilo clicker em navegador, num cenário de cibercrime e pirataria informática. O objetivo principal do utilizador é acumular dois tipos primários de recursos - Criptomoedas (Crypto) e Dados Roubados (Dados) - através de ações diretas (cliques) e de investimentos em infraestruturas automatizadas (Trojans, Servidores e Fóruns da Dark Web).
 
 O sistema foi estruturado de forma modular e segue o padrão arquitetural Cliente-Servidor (Client-Server), onde a interface interativa corre inteiramente no navegador do cliente (Frontend), enquanto a validação de segurança, autenticação e persistência de dados ocorrem no servidor (Backend).
 
 
 
-2. Arquitetura do Sistema e Estrutura de Ficheiros
-O projeto está dividido de forma clara entre a lógica do servidor, modelos de dados e os ficheiros estáticos da interface pública:
+2. ARQUITETURA DO SISTEMA E ESTRUTURA DOS FICHEIROS
+
+O projeto está dividido entre a lógica do servidor, modelos de dados e os ficheiros estáticos da interface pública:
 
 server.py: Configuração da aplicação Flask e registo de rotas.
 
@@ -33,7 +35,8 @@ Base de Dados: SQLite3 (cyberbreach.sqlite), uma solução leve e integrada.
 
 
 
-3. Esquema da Base de Dados (Modelos Relacionais)
+3. ESQUEMA DA BASE DE DADOS
+
 A base de dados é composta por duas tabelas principais geridas através de comandos SQL nativos na classe Database:
 
 Tabela USER
@@ -69,11 +72,13 @@ NIVEL (INTEGER, Default 1): Nível de evolução da estrutura (1 a 3).
 
 
 
-4. Especificação da API (Rotas e Endpoints)
+4. ESPECIFICAÇÃO DA API (Rotas e Endpoints)
+
 A comunicação do jogo é efetuada através de chamadas assíncronas (via fetch no JavaScript) para os seguintes endpoints HTTP expostos no backend:
 
 
-4.1. Autenticação e Páginas de Sistema
+4.1. AUTENTICAÇÃO E PÁGINAS DE SISTEMA
+
 GET / : Renderiza o dashboard principal do jogo ou o ecrã de acesso restrito.
 
 GET /login | POST /login : Formulário de login utilizando Flask-Login.
@@ -85,7 +90,8 @@ GET /recuperar | POST /recuperar : Redefinição segura da palavra-passe.
 GET /logout : Encerra a sessão ativa.
 
 
-4.2. Endpoints do Motor de Jogo
+4.2. ENDPOINTS DO MOTOR DE JOGO
+
 POST /salvar-progresso
 
 Input JSON: { "crypto": int, "dados": int }
@@ -114,15 +120,17 @@ GET /get-leaderboard
 
 Query Params: ?tipo=crypto ou ?tipo=dados
 
-Função: Retorna a lista contendo o TOP 5 de utilizadores e os respetivos valores acumulados.
+Função: Retorna a lista com o TOP 5 de utilizadores e os respetivos valores acumulados.
 
 
 
-5. Instruções de Instalação e Execução
-Pré-requisitos
+5. INSTRUÇÕES DE INSTALAÇÃO E EXECUÇÃO
+
+Pré-requisitos:
 Python 3 instalado no sistema.
 
-Passo a Passo
+Passo a Passo:
+
 Extrair os ficheiros do projeto para uma pasta local.
 
 Abrir a linha de comandos apontando para o diretório raiz do projeto.
