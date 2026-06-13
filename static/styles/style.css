@@ -23,6 +23,7 @@ html, body {
     height: 100vh;
     position: relative;
     overflow: hidden;
+    text-align: center;
 }
 
 /* CLASSES DE FUNDO DINÂMICO */

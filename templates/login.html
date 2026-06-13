@@ -9,19 +9,24 @@
 <body>
     <div class="login-container bg-auth">
         <div class="efeito-luz-pisca"></div>
-        <div class="login-box" style="width: 450px;"> 
+        <div class="login-box" style="width: 450px;">
             <div class="header-container">
                 <img src="/static/images/titulo_cyberbreach.png" alt="Logo">
             </div>
             
             <div class="panel-dark">
-                <h2 class="text-neon-green mb-20">Iniciar Sessão</h2>
+                <h2 class="text-neon-green text-center mb-20">Iniciar Sessão</h2>
                 
-                <form method="POST" class="d-flex flex-col gap-15">
-                    <input type="text" name="username" placeholder="Username" required>
+                {# DIV PARA MENSAGEM DE ERRO #}
+                <div id="error-message" style="display: none; background-color: rgba(255, 77, 77, 0.2); border: 1px solid #ff4d4d; border-radius: 4px; padding: 10px; margin-bottom: 15px; color: #ff4d4d; font-size: 13px; text-align: center;">
+                    ⚠️ <span id="error-text"></span>
+                </div>
+                
+                <form id="login-form" method="POST" class="d-flex flex-col gap-15">
+                    <input type="text" id="username" name="username" placeholder="Username" required value="{{ request.form.username if form else '' }}">
                     
                     <div style="position: relative; width: 100%;">
-                        <input type="password" name="password" placeholder="Password" required style="padding-right: 45px;">
+                        <input type="password" id="password" name="password" placeholder="Password" required style="padding-right: 45px;">
                         <button type="button" class="toggle-password-btn" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: transparent; border: none; cursor: pointer; padding: 0;">
                             <img src="/static/images/hacker_password.png" alt="Mostrar Password" width="20" height="20" style="display: block;">
                         </button>
@@ -39,19 +44,89 @@
                     </button>
                 </form>
 
-                <p class="text-muted mt-20" style="font-size: 13px;">
+                <p class="text-muted mt-20 text-center" style="font-size: 13px;">
                     Não tens acesso? <a href="{{ url_for('register_page') }}" class="text-neon-green text-bold" style="text-decoration: none;">Registar Novo Hacker</a>
                 </p>
 
                 {% if form and form.errors %}
                     {% for field, error in form.errors.items() %}
-                        <p class="text-red mt-15" style="font-size: 12px;">{{ error }}</p>
+                        <p class="text-red mt-15 text-center" style="font-size: 12px;">{{ error }}</p>
                     {% endfor %}
                 {% endif %}
             </div>
         </div>
         
-        <script src="{{ url_for('static', filename='scripts/code.js') }}" defer></script>
+        <script>
+            // Toggle da password
+            const toggleBtn = document.querySelector('.toggle-password-btn');
+            const passwordInput = document.getElementById('password');
+            
+            if (toggleBtn && passwordInput) {
+                toggleBtn.addEventListener('click', function() {
+                    if (passwordInput.type === 'password') {
+                        passwordInput.type = 'text';
+                        this.innerHTML = '<img src="/static/images/password_escondida.png" alt="Esconder Password" width="20" height="20" style="display: block;">';
+                    } else {
+                        passwordInput.type = 'password';
+                        this.innerHTML = '<img src="/static/images/hacker_password.png" alt="Mostrar Password" width="20" height="20" style="display: block;">';
+                    }
+                });
+            }
+            
+            // Login via AJAX para mostrar erro sem refresh
+            const loginForm = document.getElementById('login-form');
+            const errorDiv = document.getElementById('error-message');
+            const errorText = document.getElementById('error-text');
+            
+            if (loginForm) {
+                loginForm.addEventListener('submit', function(e) {
+                    e.preventDefault(); // Impede o refresh da página
+                    
+                    const username = document.getElementById('username').value;
+                    const password = document.getElementById('password').value;
+                    const remember = document.querySelector('input[name="remember"]').checked ? 'yes' : '';
+                    
+                    // Esconder erro anterior
+                    errorDiv.style.display = 'none';
+                    
+                    fetch('/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: new URLSearchParams({
+                            'username': username,
+                            'password': password,
+                            'remember': remember
+                        })
+                    })
+                    .then(response => {
+                        if (response.redirected) {
+                            // Login bem-sucedido - redirecionar
+                            window.location.href = response.url;
+                        } else {
+                            return response.text();
+                        }
+                    })
+                    .then(html => {
+                        if (html && html.includes('login-container')) {
+                            // Verificar se há mensagem de erro no HTML retornado
+                            if (html.includes('text-red')) {
+                                errorText.textContent = '❌ Username ou password incorretos. Tenta novamente.';
+                                errorDiv.style.display = 'block';
+                                document.getElementById('password').value = ''; // Limpa a password
+                                document.getElementById('password').focus();
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro:', error);
+                        errorText.textContent = '❌ Erro ao tentar fazer login. Tenta novamente.';
+                        errorDiv.style.display = 'block';
+                    });
+                });
+            }
+        </script>
     </div>
 </body>
 </html>
