@@ -123,6 +123,12 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
     color: white;
 }
 
+/* Estilos de borda subtil para inputs (opcional mas recomendado no tema escuro) */
+.login-box input[type="text"],
+.login-box input[type="password"] {
+    border: 1px solid #444;
+}
+
 .login-box input[type="text"]:focus,
 .login-box input[type="password"]:focus {
     outline: none;
@@ -199,3 +205,114 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
     70%  { opacity: 0.3; }  
     100% { opacity: 0.1; }  
 }
+
+/*SISTEMA DE GRELHA E PAINEIS (LAYOUT)*/
+.dashboard-layout {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.main-column {
+    flex: 2;
+    text-align: center;
+}
+
+.side-column {
+    flex: 1;
+    min-width: 240px;
+}
+
+.panel-dark {
+    background-color: rgba(0, 0, 0, 0.75);
+    padding: 20px;
+    border-radius: 6px;
+    border: 1px solid #222;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+
+.stats-panel {
+    display: flex;
+    justify-content: space-around;
+    background-color: rgba(0,0,0,0.8);
+    padding: 12px;
+    border: 1px solid #00ffcc;
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(0, 255, 204, 0.2);
+}
+
+/*CYBER BUTTONS*/
+.cyber-button {
+    display: block;
+    background-color: #000000;
+    text-align: center;
+    padding: 12px;
+    font-size: 13px;
+    font-weight: bold;
+    border-radius: 4px;
+    border: 1px solid #111;
+    transition: 0.3s;
+    cursor: pointer;
+    text-decoration: none; /* Para links parecerem botões */
+}
+
+.cyber-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Modificadores de Cor (Padrão + Hover) */
+.btn-pink { color: #db08a7; }
+.btn-pink:hover:not(:disabled) {
+    background-color: #111;
+    border-color: #db08a7;
+    box-shadow: 0 0 10px rgba(219, 8, 167, 0.2);
+}
+
+.btn-green { color: #00ffcc; }
+.btn-green:hover:not(:disabled) {
+    background-color: #111;
+    border-color: #00ffcc;
+    box-shadow: 0 0 10px rgba(0, 255, 204, 0.2);
+}
+
+.btn-white { color: #ffffff; }
+.btn-white:hover:not(:disabled) {
+    background-color: #111;
+    border-color: #ffffff;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+.btn-yellow { color: #ffc107; }
+.btn-yellow:hover:not(:disabled) {
+    background-color: #111;
+    border-color: #ffc107;
+    box-shadow: 0 0 10px rgba(255, 193, 7, 0.2);
+}
+
+.btn-red { color: #ff4d4d; }
+.btn-red:hover:not(:disabled) {
+    background-color: #111;
+    border-color: #ff4d4d;
+    box-shadow: 0 0 10px rgba(255, 77, 77, 0.2);
+}
+
+
+   /*TIPOGRAFIA E UTILITÁRIOS*/
+
+.text-neon-green { color: #00ffcc; text-shadow: 0 0 5px rgba(0, 255, 204, 0.3); }
+.text-neon-pink { color: #db08a7; text-shadow: 0 0 10px rgba(219, 8, 167, 0.5); }
+.text-red { color: #ff4d4d; }
+.text-muted { color: #aaa; }
+.text-bold { font-weight: bold; }
+
+.w-100 { width: 100%; }
+.mb-10 { margin-bottom: 10px; }
+.mb-15 { margin-bottom: 15px; }
+.mb-20 { margin-bottom: 20px; }
+.mt-15 { margin-top: 15px; }
+.mt-20 { margin-top: 20px; }
+.d-flex { display: flex; }
+.flex-col { flex-direction: column; }
+.gap-10 { gap: 10px; }
+.gap-15 { gap: 15px; }

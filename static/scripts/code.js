@@ -1,23 +1,27 @@
 // Esperar que o DOM esteja carregado
 document.addEventListener('DOMContentLoaded', function () {
 
-    // LÓGICA DO OLHO DA PASSWORD
-    const passwordInput = document.getElementById('password-input');
-    const togglePassword = document.getElementById('toggle-password');
-
-    if (togglePassword && passwordInput) {
-        togglePassword.addEventListener('click', function () {
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                togglePassword.innerHTML = '<img src="/static/images/password_escondida.png" alt="Esconder Password" width="24">'; 
-            } else {
-                passwordInput.type = 'password';
-                togglePassword.innerHTML = '<img src="/static/images/hacker_password.png" alt="Mostrar Password" width="24">';                
+    // 1. LÓGICA DO OLHO DA PASSWORD (AGORA É UNIVERSAL!)
+    const toggleButtons = document.querySelectorAll('.toggle-password-btn');
+    
+    toggleButtons.forEach(btn => {
+        btn.addEventListener('click', function () {
+            // A caixa de texto é sempre o elemento imediatamente anterior ao botão no HTML
+            const input = this.previousElementSibling;
+            
+            if (input && input.tagName === 'INPUT') {
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    this.innerHTML = '<img src="/static/images/password_escondida.png" alt="Esconder Password" width="20" height="20" style="display: block;">'; 
+                } else {
+                    input.type = 'password';
+                    this.innerHTML = '<img src="/static/images/hacker_password.png" alt="Mostrar Password" width="20" height="20" style="display: block;">';                
+                }
             }
         });
-    }
+    });
 
-    // LÓGICA DO JOGO E UPGRADES
+    // 2. LÓGICA DO JOGO E UPGRADES
     const valCryptoElement = document.getElementById('val-crypto');
     const valDadosElement = document.getElementById('val-dados');
 
@@ -28,9 +32,7 @@ document.addEventListener('DOMContentLoaded', function () {
         let fpsDados = parseInt(window.FPS_DADOS || 1, 10);
         let fpsCrypto = parseInt(window.FPS_CRYPTO || 0, 10);
 
-        // =================================================================
         // O CADEADO DE SEGURANÇA (Evita que o auto-save apague compras/vendas)
-        // =================================================================
         let isProcessingTransaction = false;
 
         function atualizarEcra() {
@@ -58,7 +60,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 1000);
 
         function guardarProgresso() {
-            // Se estivermos a comprar/vender, NÃO FAZ SAVE (Evita o Bug do dinheiro sumir)
             if (isProcessingTransaction) return Promise.resolve({status: "ignorado"});
             
             return fetch('/salvar-progresso', {
@@ -72,12 +73,10 @@ document.addEventListener('DOMContentLoaded', function () {
             guardarProgresso().catch(error => console.error("Falha ao auto-guardar:", error));
         }, 5000);
 
-        // ==========================================
         // 3. FUNÇÕES DE COMPRAR, VENDER E EVOLUIR
-        // ==========================================
         window.comprarEstrutura = function(slotId) {
             if (isProcessingTransaction) return;
-            isProcessingTransaction = true; // Tranca o jogo
+            isProcessingTransaction = true; 
 
             guardarProgresso().then(() => {
                 return fetch("/comprar-estrutura", {
@@ -91,7 +90,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (data.status === "sucesso") {
                     window.location.reload();
                 } else {
-                    isProcessingTransaction = false; // Destranca em caso de erro
+                    isProcessingTransaction = false; 
                     alert("⚠️ " + data.mensagem);
                 }
             })
@@ -102,7 +101,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (isProcessingTransaction) return;
             if (!confirm("Tens a certeza que queres vender esta estrutura por 40% do valor investido?")) return;
             
-            isProcessingTransaction = true; // Tranca o jogo
+            isProcessingTransaction = true; 
 
             guardarProgresso().then(() => {
                 return fetch("/vender-estrutura", {
@@ -117,7 +116,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     alert(data.mensagem);
                     window.location.reload();
                 } else {
-                    isProcessingTransaction = false; // Destranca
+                    isProcessingTransaction = false;
                     alert("Erro: " + data.mensagem);
                 }
             })
@@ -126,9 +125,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         window.evoluirEstrutura = function(slotId) {
             if (isProcessingTransaction) return;
-            isProcessingTransaction = true; // Tranca o jogo
+            isProcessingTransaction = true; 
 
-            // ADICIONADO: Faltava aqui o guardarProgresso antes de evoluir!
             guardarProgresso().then(() => {
                 return fetch('/evoluir-estrutura', {
                     method: 'POST',
@@ -142,16 +140,14 @@ document.addEventListener('DOMContentLoaded', function () {
                     alert(data.mensagem);
                     window.location.reload();
                 } else {
-                    isProcessingTransaction = false; // Destranca
+                    isProcessingTransaction = false;
                     alert('❌ ' + data.mensagem);
                 }
             })
             .catch(error => { isProcessingTransaction = false; alert("Erro ao comunicar."); });
         };
 
-        // ==========================================
         // 4. TEMPORIZADORES DOS SLOTS
-        // ==========================================
         function atualizarContadoresRegressivos() {
             const agora = Math.floor(Date.now() / 1000);
             const cards = document.querySelectorAll(".slot-card");
@@ -184,11 +180,10 @@ document.addEventListener('DOMContentLoaded', function () {
         atualizarContadoresRegressivos();
         setInterval(atualizarContadoresRegressivos, 1000);
 
-        // ==========================================
+        
         // 5. MEGA-ROUBO
-        // ==========================================
         const btnMegaRoubo = document.getElementById('btn-mega-roubo');
-        const COOLDOWN_MS = 60 * 1000;
+        const COOLDOWN_MS = 5 * 60 * 1000; 
         const megaRouboKey = 'megaRouboStart_' + window.USERNAME;
 
         function verificarCooldown() {
@@ -200,7 +195,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 btnMegaRoubo.style.cursor = 'pointer';
                 btnMegaRoubo.style.borderColor = '#db08a7'; 
                 btnMegaRoubo.style.color = '#db08a7';
-                btnMegaRoubo.textContent = "🚨 Iniciar Mega-Roubo (Demora 1m)";
+                
+                // Texto alterado para 5m
+                btnMegaRoubo.textContent = "🚨 Iniciar Mega-Roubo (Demora 5m)"; 
                 return "START";
             }
 
@@ -210,10 +207,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 btnMegaRoubo.disabled = true;
                 btnMegaRoubo.style.opacity = '0.5';
                 btnMegaRoubo.style.cursor = 'not-allowed';
+                
                 const tempoRestante = COOLDOWN_MS - tempoPassado;
                 const minutos = Math.floor(tempoRestante / 60000);
                 const segundos = Math.floor((tempoRestante % 60000) / 1000);
-                btnMegaRoubo.textContent = `⏳ A extrair dados... (${minutos}m ${segundos}s)`;
+                
+                // Formatação: adiciona um "0" à esquerda se os segundos forem menores que 10
+                const segFormatados = segundos < 10 ? "0" + segundos : segundos;
+                
+                btnMegaRoubo.textContent = `⏳ A extrair dados... (${minutos}m ${segFormatados}s)`;
                 return "IN_PROGRESS";
             } else {
                 btnMegaRoubo.disabled = false;
@@ -244,9 +246,7 @@ document.addEventListener('DOMContentLoaded', function () {
             verificarCooldown();
         }
 
-        // ==========================================
         // 6. LOGOUT
-        // ==========================================
         const btnLogout = document.getElementById('btn-logout');
         if (btnLogout) {
             btnLogout.addEventListener('click', function() {
@@ -259,16 +259,14 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
 
-        // ==========================================
-        // LEADERBOARD COM ABA SELETORA
-        // ==========================================
+        // 7. LEADERBOARD COM ABA SELETORA
         let leaderboardTipoAtual = 'crypto';
 
         function carregarLeaderboard() {
             const container = document.getElementById('leaderboard-container');
             if (!container) return;
             
-            container.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;"><span>⏳ A carregar...</span></div>';
+            container.innerHTML = '<div class="text-muted text-bold" style="text-align: center; padding: 20px;"><span>⏳ A carregar...</span></div>';
             
             fetch(`/get-leaderboard?tipo=${leaderboardTipoAtual}`, {
                 method: 'GET',
@@ -278,7 +276,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(data => {
                 if (data.status === 'sucesso' && data.leaderboard) {
                     if (data.leaderboard.length === 0) {
-                        container.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">Sem dados para ranking.</div>';
+                        container.innerHTML = '<div class="text-muted" style="text-align: center; padding: 20px;">Sem dados para ranking.</div>';
                         return;
                     }
                     
@@ -293,7 +291,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         // Destacar o próprio jogador
                         const isCurrentUser = (jogador.username === window.USERNAME);
                         const rowStyle = isCurrentUser ? 'background-color: rgba(0, 255, 204, 0.15); border-left: 3px solid #00ffcc;' : '';
-                        const nameStyle = isCurrentUser ? 'color: #00ffcc; font-weight: bold;' : 'color: #ffffff;';
+                        const nameClass = isCurrentUser ? 'text-neon-green text-bold' : 'text-white';
                         
                         // Formatar números
                         let cryptoDisplay = jogador.crypto;
@@ -305,16 +303,16 @@ document.addEventListener('DOMContentLoaded', function () {
                         else if (dadosDisplay >= 1000) dadosDisplay = (dadosDisplay / 1000).toFixed(1) + 'K';
                         
                         html += `
-                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 5px; border-bottom: 1px solid #333; ${rowStyle}">
-                                <div style="display: flex; align-items: center; gap: 10px;">
+                            <div class="d-flex" style="justify-content: space-between; align-items: center; padding: 8px 5px; border-bottom: 1px solid #333; ${rowStyle}">
+                                <div class="d-flex gap-10" style="align-items: center;">
                                     <span style="color: #ffc107; font-weight: bold; width: 35px; font-size: 14px;">${medalha}</span>
-                                    <span style="${nameStyle} font-size: 13px;">${escapeHtml(jogador.username)}</span>
+                                    <span class="${nameClass}" style="font-size: 13px;">${escapeHtml(jogador.username)}</span>
                                 </div>
-                                <div style="display: flex; gap: 12px;">
+                                <div class="d-flex gap-10">
                                     <span style="color: gold; font-size: 11px;">
                                         <img src="/static/images/bitcoin_currency2.png" style="width: 12px; height: 12px; vertical-align: middle;"> ${cryptoDisplay}
                                     </span>
-                                    <span style="color: #00ffcc; font-size: 11px;">
+                                    <span class="text-neon-green" style="font-size: 11px;">
                                         <img src="/static/images/dados_currency.png" style="width: 12px; height: 12px; vertical-align: middle;"> ${dadosDisplay} TB
                                     </span>
                                 </div>
@@ -324,16 +322,15 @@ document.addEventListener('DOMContentLoaded', function () {
                     
                     container.innerHTML = html;
                 } else {
-                    container.innerHTML = '<div style="text-align: center; padding: 20px; color: #ff4d4d;">Erro ao carregar ranking.</div>';
+                    container.innerHTML = '<div class="text-red" style="text-align: center; padding: 20px;">Erro ao carregar ranking.</div>';
                 }
             })
             .catch(error => {
                 console.error("Erro ao buscar leaderboard:", error);
-                container.innerHTML = '<div style="text-align: center; padding: 20px; color: #ff4d4d;">Erro ao carregar ranking.</div>';
+                container.innerHTML = '<div class="text-red" style="text-align: center; padding: 20px;">Erro ao carregar ranking.</div>';
             });
         }
 
-        // Função auxiliar para escapar HTML
         function escapeHtml(text) {
             if (!text) return '';
             const div = document.createElement('div');
@@ -341,7 +338,6 @@ document.addEventListener('DOMContentLoaded', function () {
             return div.innerHTML;
         }
 
-        // Configurar botões do leaderboard
         const btnCrypto = document.getElementById('leaderboard-crypto-btn');
         const btnDados = document.getElementById('leaderboard-dados-btn');
 
@@ -360,10 +356,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 carregarLeaderboard();
             });
             
-            // Carregar leaderboard inicial
             carregarLeaderboard();
-            
-            // Atualizar a cada 15 segundos
             setInterval(carregarLeaderboard, 15000);
         }
     }

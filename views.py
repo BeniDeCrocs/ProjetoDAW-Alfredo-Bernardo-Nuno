@@ -42,6 +42,7 @@ def home_page():
     
     total_geracao_dados = 1
     total_geracao_crypto = 0
+    leaderboard = []
     
     try:
         with dbapi2.connect(db.dbfile) as connection:
@@ -357,9 +358,7 @@ def salvar_progresso():
         return jsonify({"status": "sucesso"})
     return jsonify({"status": "erro"}), 500
 
-# ==========================================================
 # Funções de Login / Registo / Recuperar
-# ==========================================================
 
 def validate_register_form(form):
     form.data = {}

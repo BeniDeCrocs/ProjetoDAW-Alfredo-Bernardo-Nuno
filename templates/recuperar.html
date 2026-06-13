@@ -8,84 +8,49 @@
 </head>
 <body>
     <div class="login-container bg-auth">
-        
-        <div class="login-box" style="width: 450px; text-align: center; padding-bottom: 20px;">
-            
+        <div class="efeito-luz-pisca"></div>
+        <div class="login-box" style="width: 450px;">
             <div class="header-container">
                 <img src="/static/images/titulo_cyberbreach.png" alt="Logo">
             </div>
 
-            <div style="background-color: rgba(0, 0, 0, 0.75); padding: 30px; border-radius: 6px; border: 1px solid #222; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
-                <h2 style="color: #ff4d4d; margin-bottom: 20px;">Recuperar Acesso</h2>
-                <p style="font-size: 13px; color: #aaa; margin-bottom: 20px;">
+            <div class="panel-dark">
+                <h2 class="text-red mb-20">Recuperar Acesso</h2>
+                <p class="text-muted mb-20" style="font-size: 13px;">
                     Insere o teu username e uma nova palavra-passe.
                 </p>
 
-                <form method="POST" style="display: flex; flex-direction: column; gap: 15px;">
-                    <input type="text" name="username" placeholder="Username" required style="width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid #444; color: white; border-radius: 4px; box-sizing: border-box;">
+                <form method="POST" class="d-flex flex-col gap-15">
+                    <input type="text" name="username" placeholder="Username" required>
                     
-                    {# CAMPO NOVA PASSWORD COM BOTÃO DO OLHO #}
                     <div style="position: relative; width: 100%;">
-                        <input type="password" id="new-password-input" name="new_password" placeholder="Nova Password" required style="width: 100%; padding: 12px; padding-right: 45px; background: rgba(255,255,255,0.05); border: 1px solid #444; color: white; border-radius: 4px; box-sizing: border-box;">
-                        <button type="button" id="toggle-new-password" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: transparent; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center;">
-                            <img src="/static/images/hacker_password.png" alt="Mostrar Password" width="20" height="20">
+                        <input type="password" name="new_password" placeholder="Nova Password" required style="padding-right: 45px;">
+                        <button type="button" class="toggle-password-btn" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: transparent; border: none; cursor: pointer; padding: 0;">
+                            <img src="/static/images/hacker_password.png" alt="Mostrar Password" width="20" height="20" style="display: block;">
                         </button>
                     </div>
                     
-                    {# CAMPO CONFIRMAR PASSWORD COM BOTÃO DO OLHO #}
                     <div style="position: relative; width: 100%;">
-                        <input type="password" id="confirm-password-input" name="confirm_password" placeholder="Confirmar Password" required style="width: 100%; padding: 12px; padding-right: 45px; background: rgba(255,255,255,0.05); border: 1px solid #444; color: white; border-radius: 4px; box-sizing: border-box;">
-                        <button type="button" id="toggle-confirm-password" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: transparent; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center;">
-                            <img src="/static/images/hacker_password.png" alt="Mostrar Password" width="20" height="20">
+                        <input type="password" name="confirm_password" placeholder="Confirmar Password" required style="padding-right: 45px;">
+                        <button type="button" class="toggle-password-btn" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: transparent; border: none; cursor: pointer; padding: 0;">
+                            <img src="/static/images/hacker_password.png" alt="Mostrar Password" width="20" height="20" style="display: block;">
                         </button>
                     </div>
 
-                    <button type="submit" style="width: 100%; background-color: #000000; color: #ff4d4d; padding: 12px; font-weight: bold; border-radius: 4px; border: 1px solid #111; cursor: pointer; transition: 0.3s; margin-top: 10px;" onmouseover="this.style.backgroundColor='#111'; this.style.borderColor='#ff4d4d'" onmouseout="this.style.backgroundColor='#000000'; this.style.borderColor='#111'">Redefinir Password</button>
+                    <button type="submit" class="cyber-button btn-red w-100 mt-10">Redefinir Password</button>
                 </form>
 
-                <p style="margin-top: 20px;">
-                    <a href="{{ url_for('login_page') }}" style="color: #aaa; font-size: 12px; text-decoration: none;">Voltar ao Login</a>
+                <p class="mt-20">
+                    <a href="{{ url_for('login_page') }}" class="text-muted" style="font-size: 12px; text-decoration: none;">Voltar ao Login</a>
                 </p>
 
                 {% if error %}
-                    <p style="color: #ff4d4d; margin-top: 15px; font-size: 12px;">{{ error }}</p>
+                    <p class="text-red mt-15" style="font-size: 12px;">{{ error }}</p>
                 {% endif %}
             </div>
         </div>
+        
+        <script src="{{ url_for('static', filename='scripts/code.js') }}" defer></script>
     </div>
-
-    <script>
-        // LÓGICA DO OLHO PARA NOVA PASSWORD
-        const newPasswordInput = document.getElementById('new-password-input');
-        const toggleNewPassword = document.getElementById('toggle-new-password');
-
-        if (toggleNewPassword && newPasswordInput) {
-            toggleNewPassword.addEventListener('click', function () {
-                if (newPasswordInput.type === 'password') {
-                    newPasswordInput.type = 'text';
-                    toggleNewPassword.innerHTML = '<img src="/static/images/password_escondida.png" alt="Esconder Password" width="20" height="20">';
-                } else {
-                    newPasswordInput.type = 'password';
-                    toggleNewPassword.innerHTML = '<img src="/static/images/hacker_password.png" alt="Mostrar Password" width="20" height="20">';
-                }
-            });
-        }
-
-        // LÓGICA DO OLHO PARA CONFIRMAR PASSWORD
-        const confirmPasswordInput = document.getElementById('confirm-password-input');
-        const toggleConfirmPassword = document.getElementById('toggle-confirm-password');
-
-        if (toggleConfirmPassword && confirmPasswordInput) {
-            toggleConfirmPassword.addEventListener('click', function () {
-                if (confirmPasswordInput.type === 'password') {
-                    confirmPasswordInput.type = 'text';
-                    toggleConfirmPassword.innerHTML = '<img src="/static/images/password_escondida.png" alt="Esconder Password" width="20" height="20">';
-                } else {
-                    confirmPasswordInput.type = 'password';
-                    toggleConfirmPassword.innerHTML = '<img src="/static/images/hacker_password.png" alt="Mostrar Password" width="20" height="20">';
-                }
-            });
-        }
-    </script>
 </body>
 </html>
